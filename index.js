@@ -1,5 +1,6 @@
 const cluster = require("cluster");
 const connection = require("./src/config/database");
+const router = require("./src/routes/indexRoutes");
 require("dotenv").config();
 const numCPUs = require("os").cpus().length;
 if (cluster.isMaster) {
@@ -27,6 +28,8 @@ if (cluster.isMaster) {
     const server = app.listen(process.env.APP_PORT, () =>
         console.log(`Worker ${process.pid} started on ${process.env.APP_PORT}`)
     );
+
+    app.use('/api/v1', router)
 
     app.use("/api/demo", (req, res) => {
         res.status(200).send({
