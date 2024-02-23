@@ -24,7 +24,6 @@ const jwt = {
                     message: "Session timed out. Please sign in again",
                 });
             } else {
-                console.log(decoded, "decoded");
                 if (decoded.role !== "superadmin") {
                     return res.status(401).json({
                         success: false,

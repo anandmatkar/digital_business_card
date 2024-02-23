@@ -24,6 +24,7 @@ CREATE TABLE public.company (
     company_website VARCHAR(100),
     status VARCHAR(20) DEFAULT 'activated', --activated, deactivated
     max_cards INT,
+    used_cards INT
     contact_person_name VARCHAR(100),
     contact_person_designation VARCHAR(100),
     contact_person_email VARCHAR(80),
@@ -48,6 +49,7 @@ CREATE TABLE public.company_admin (
     phone_number VARCHAR(30),
     mobile_number varchar(30),
     company_id uuid REFERENCES company(id),
+    company_name VARCHAR(50) NOT NULL,
     created_by uuid NOT NULL,
     role VARCHAR(20) NOT NULL,
     is_active boolean DEFAULT true,
