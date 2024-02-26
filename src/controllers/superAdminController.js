@@ -170,7 +170,6 @@ module.exports.changePassword = async (req, res) => {
 }
 
 /*   Company & Company Admin Section  */
-
 module.exports.createCompany = async (req, res) => {
     try {
         let { id } = req.user
@@ -381,7 +380,21 @@ module.exports.editCompanyDetails = async (req, res) => {
     }
 }
 
+module.exports.deactivateCompanyAndCompanyAdmin = async (req, res) => {
+    try {
+        let { id } = req.user
+        await connection.query("BEGIN")
+        let s1 = dbScript(db_sql['Q3'], { var1: id })
+        let findSuperAdmin = await connection.query(s1)
+        if (findSuperAdmin.rowCount > 0) {
 
+        } else {
+            return handleResponse(res, 401, false, "Super Admin Not Found")
+        }
+    } catch (error) {
+
+    }
+}
 
 
 
