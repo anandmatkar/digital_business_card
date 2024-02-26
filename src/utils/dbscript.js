@@ -58,19 +58,93 @@ const db_sql = {
             GROUP BY 
                 c.id;`,
     Q12: `UPDATE company SET company_name = '{var1}', company_email = '{var2}', company_contact_number = '{var3}', max_cards = '{var4}', 
-    contact_person_name = '{var5}', contact_person_email = '{var6}', description = '{var7}', company_address = '{var8}',company_logo = '{var9}', company_website = '{var10}', contact_person_designation = '{var11}', contact_person_mobile = '{var12}', latitude = '{var13}', longitude = '{var14}' WHERE id = '{var15}' AND deleted_at IS NULL RETURNING *`
+    contact_person_name = '{var5}', contact_person_email = '{var6}', description = '{var7}', company_address = '{var8}',company_logo = '{var9}', company_website = '{var10}', contact_person_designation = '{var11}', contact_person_mobile = '{var12}', latitude = '{var13}', longitude = '{var14}' WHERE id = '{var15}' AND deleted_at IS NULL RETURNING *`,
+    Q13: `UPDATE company SET status = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *;`,
+    Q14: `UPDATE company SET admin_id = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *;`,
+    Q15: `UPDATE company_admin SET is_active = '{var1}' WHERE company_id = '{var2}' AND deleted_at IS NULL RETURNING *;`,
+    Q16: `SELECT 
+                c.id, 
+                c.company_name, 
+                c.company_email, 
+                c.description, 
+                c.company_address, 
+                c.company_logo, 
+                c.company_contact_number,
+                c.company_website, 
+                c.status, 
+                c.max_cards,
+                c.used_cards, 
+                c.contact_person_name, 
+                c.contact_person_designation,
+                c.contact_person_email, 
+                c.contact_person_mobile, 
+                c.location, 
+                c.latitude, 
+                c.longitude, 
+                c.created_at, 
+                c.updated_at, 
+                c.deleted_at,
+                COALESCE(json_agg(json_build_object(
+                    'company_admin_id', ca.id,
+                    'first_name', ca.first_name,
+                    'last_name', ca.last_name,
+                    'email', ca.email,
+                    'phone_number', ca.phone_number,
+                    'mobile_number', ca.mobile_number,
+                    'company_id', ca.company_id,
+                    'created_by', ca.created_by,
+                    'role', ca.role,
+                    'is_active', ca.is_active,
+                    'avatar', ca.avatar,
+                    'created_at', ca.created_at,
+                    'updated_at', ca.updated_at,
+                    'deleted_at', ca.deleted_at
+                )), '[]') AS company_admin_data
+            FROM 
+                company AS c 
+            LEFT JOIN 
+                company_admin AS ca ON c.id = ca.company_id AND ca.deleted_at IS NULL
+            WHERE 
+                c.admin_id = '{var1}' 
+                AND c.deleted_at IS NULL
+            GROUP BY 
+                c.id;`,
+    Q17: `INSERT INTO digital_cards (company_id, created_by, card_reference, first_name, last_name,user_email, designation,bio,qr_url, user_type,cover_pic,profile_picture,card_url,vcf_card_url,company_ref, contact_number ) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}') RETURNING *`,
+    Q18: `INSERT INTO user_media_link (facebook, instagram, extra_link_title, extra_link_url, digital_card_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+    Q19: `SELECT dc.*,
+          c.company_name,c.company_email,c.company_address,c.company_logo,c.company_contact_number,c.company_website,c.location, 
+          usm.facebook, usm.instagram, usm.extra_link_title, usm.extra_link_url, usm.whatsapp
+        FROM digital_cards dc
+          LEFT JOIN company c on c.id = dc.company_id 
+          LEFT JOIN user_media_link usm ON usm.digital_card_id = dc.id
+        WHERE dc.company_ref = '{var1}' AND dc.card_reference = '{var2}' AND dc.is_deactivated = '{var3}' 
+          AND dc.deleted_at IS NULL AND c.deleted_at IS NULL AND c.status = 'activated'`,
+    Q20: `UPDATE company SET used_cards = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+    Q21: `UPDATE digital_cards SET is_active_for_qr = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+    Q22: `UPDATE digital_cards SET is_deactivated = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+    Q23: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,is_active_for_qr FROM digital_cards WHERE created_by = '{var1}' AND deleted_at IS NULL`,
+    Q24: `UPDATE digital_cards SET is_active_for_qr = '{var1}' WHERE id IN ('{var2}') AND deleted_at IS NULL RETURNING *`,
+};
 
-
+const db_sql_ca = {
+    Q1: `SELECT * FROM company_admin WHERE email = '{var1}' AND deleted_at IS NULL`,
+    Q2: `SELECT id, first_name, last_name, email, phone_number, mobile_number, company_id, created_by, role, is_active, avatar, created_at, updated_at, deleted_at, company_name FROM company_admin WHERE id = '{var1}' AND deleted_at IS NULL`,
+    Q3: `SELECT * FROM company_admin WHERE id = '{var1}' AND deleted_at IS NULL AND is_active = true`,
+    Q4: `UPDATE company_admin SET password = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+    Q5: `UPDATE company_admin SET first_name = '{var2}', last_name = '{var3}', email = '{var4}', phone_number = '{var5}', mobile_number = '{var6}', avatar = '{var7}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
 };
 
 function dbScript(template, variables) {
     if (variables != null && Object.keys(variables).length > 0) {
-        template = template.replace(new RegExp("\{([^\{]+)\}", "g"), (_unused, varName) => {
-            return variables[varName];
-        });
+        template = template.replace(
+            new RegExp("{([^{]+)}", "g"),
+            (_unused, varName) => {
+                return variables[varName];
+            }
+        );
     }
     template = template.replace(/'null'/g, null);
-    return template
+    return template;
 }
 
-module.exports = { db_sql, dbScript };
+module.exports = { db_sql, dbScript, db_sql_ca };

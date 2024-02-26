@@ -197,7 +197,6 @@ module.exports.createCompany = async (req, res) => {
                 let createCompany = await connection.query(s3)
 
                 if (createCompany.rowCount) {
-                    console.log(createCompany.rows, "createCompany");
                     await connection.query("COMMIT")
                     return handleResponse(res, 201, true, "Company Created Successfully", createCompany.rows)
                 } else {
@@ -298,6 +297,8 @@ module.exports.createCompanyAdmin = async (req, res) => {
                         let insertAdmin = await connection.query(s4)
                         delete insertAdmin.rows[0].password
                         if (insertAdmin.rowCount > 0) {
+                            let s4 = dbScript(db_sql['Q14'], { var1: insertAdmin.rows[0].id, var2: company_id })
+                            let updateAdminIdInCompany = await connection.query(s4)
                             await connection.query("COMMIT")
                             return handleResponse(res, 201, true, "Company Admin Created Successfully", insertAdmin.rows)
                         } else {
@@ -383,18 +384,36 @@ module.exports.editCompanyDetails = async (req, res) => {
 module.exports.deactivateCompanyAndCompanyAdmin = async (req, res) => {
     try {
         let { id } = req.user
+        let { status, company_id } = req.body
+        if (status !== 'activated' && status !== 'deactivated') {
+            return handleResponse(res, 400, false, "Invalid Status");
+        }
         await connection.query("BEGIN")
         let s1 = dbScript(db_sql['Q3'], { var1: id })
         let findSuperAdmin = await connection.query(s1)
         if (findSuperAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q13'], { var1: status, var2: company_id })
+            let deactivateCompany = await connection.query(s2)
 
+            let s3 = dbScript(db_sql['Q15'], { var1: status == "deactivated" ? false : true, var2: company_id })
+            let deactivateCompanyAdmin = await connection.query(s3)
+            if (deactivateCompany.rowCount > 0) {
+                await connection.query("COMMIT")
+                return handleResponse(res, 200, true, `Company ${status} successfully`)
+            } else {
+                await connection.query("ROLLBACK")
+                return handleSWRError(res);
+            }
         } else {
             return handleResponse(res, 401, false, "Super Admin Not Found")
         }
     } catch (error) {
-
+        await connection.query("ROLLBACK")
+        return handleCatchErrors(res, error);
     }
 }
+
+
 
 
 

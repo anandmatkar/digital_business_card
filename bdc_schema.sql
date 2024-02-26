@@ -32,6 +32,7 @@ CREATE TABLE public.company (
     location TEXT,
     latitude VARCHAR(25),
     longitude VARCHAR(25),
+    admin_id uuid,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)

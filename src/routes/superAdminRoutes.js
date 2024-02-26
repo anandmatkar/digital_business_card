@@ -18,5 +18,6 @@ router.get('/companyList', verifyTokenForSA, controller.superAdminController.com
 router.get('/companyDetails', verifyTokenForSA, controller.superAdminController.companyDetails)
 router.post('/createCompanyAdmin', verifyTokenForSA, controller.superAdminController.createCompanyAdmin)
 router.put('/editCompanyDetails', verifyTokenForSA, controller.superAdminController.editCompanyDetails)
+router.put('/deactivateCompanyAndCompanyAdmin', verifyTokenForSA, controller.superAdminController.deactivateCompanyAndCompanyAdmin)
 
 module.exports = router
