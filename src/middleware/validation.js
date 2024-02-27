@@ -1,6 +1,7 @@
 const { query, body, validationResult } = require('express-validator');
 const validator = require('validator');
 
+
 const superAdminValidation = {
 
     /* Auth Section Validation */
@@ -48,31 +49,30 @@ const superAdminValidation = {
     },
 
     /* Company & Company Admin Section Validation */
-    createCompanyValidation:
-        async (req, res) => {
-            const validationRules = [
-                body('company_name')
-                    .trim()
-                    .isLength({ min: 1 })
-                    .escape()
-                    .withMessage('Company Name is required'),
-                body('company_email').isEmail().withMessage('Invalid Company Email address'),
-                body('max_cards')
-                    .isNumeric()
-                    .withMessage('Max Cards must be numeric'),
-                body('contact_person_name')
-                    .trim()
-                    .isLength({ min: 1 })
-                    .escape()
-                    .withMessage('Contact Person Name is required'),
-                body('contact_person_email').isEmail().withMessage('Invalid Contact Person Email address'),
-            ];
+    createCompanyValidation: async (req, res) => {
+        const validationRules = [
+            body('company_name')
+                .trim()
+                .isLength({ min: 1 })
+                .escape()
+                .withMessage('Company Name is required'),
+            body('company_email').isEmail().withMessage('Invalid Company Email address'),
+            body('max_cards')
+                .isNumeric()
+                .withMessage('Max Cards must be numeric'),
+            body('contact_person_name')
+                .trim()
+                .isLength({ min: 1 })
+                .escape()
+                .withMessage('Contact Person Name is required'),
+            body('contact_person_email').isEmail().withMessage('Invalid Contact Person Email address'),
+        ];
 
-            await Promise.all(validationRules.map(validationRule => validationRule.run(req)));
+        await Promise.all(validationRules.map(validationRule => validationRule.run(req)));
 
-            return errors = validationResult(req);
+        return errors = validationResult(req);
 
-        },
+    },
 
     createCompanyAdminValidation: async (req, res) => {
         const validationRules = [
@@ -163,7 +163,6 @@ const superAdminValidation = {
 
 
 }
-
 const companyAdminValidation = {
     loginCompanyAdminValidation: async (req, res) => {
         const validationRules = [
@@ -272,6 +271,60 @@ const companyAdminValidation = {
 
         return validationResult(req);
     },
+    editCompanyValidation: async (req, res) => {
+        const validationRules = [
+            body('company_name')
+                .trim()
+                .isLength({ min: 1 })
+                .escape()
+                .withMessage('Company Name is required'),
+            body('company_email').isEmail().withMessage('Invalid Company Email address'),
+            body('description')
+                .optional()
+                .trim()
+                .escape(),
+            body('company_website')
+                .optional()
+                .trim()
+                .escape()
+                .isURL({ require_protocol: false })
+                .withMessage('Invalid Website URL'),
+            body('company_address')
+                .trim()
+                .isLength({ min: 1 })
+                .escape()
+                .withMessage('Company Address is required'),
+            body('company_logo')
+                .trim()
+                .isLength({ min: 1 })
+                .escape()
+                .withMessage('Company Logo is required'),
+            body('location')
+                .trim()
+                .isLength({ min: 1 })
+                .escape()
+                .withMessage('Location is required'),
+            body('latitude')
+                .optional()
+                .isNumeric()
+                .withMessage('Latitude must be numeric'),
+            body('longitude')
+                .optional()
+                .isNumeric()
+                .withMessage('Longitude must be numeric'),
+            body('company_contact_number')
+                .trim()
+                .escape()
+                .isMobilePhone('any', { strictMode: false })
+                .withMessage('Invalid Contact Number')
+        ];
+
+        await Promise.all(validationRules.map(validationRule => validationRule.run(req)));
+
+        return validationResult(req);
+    },
+
+
 };
 
 const cardValidation = {

@@ -1,6 +1,6 @@
 const connection = require("../config/database");
 const { issueJWT } = require("../middleware/authMiddleware");
-const { generateQRCode } = require("../utils/helpers");
+const { generateQRCode, isValidUUID } = require("../utils/helpers");
 const { mysql_real_escape_string } = require("../utils/helpers");
 const {
     handleCatchErrors,
@@ -302,6 +302,98 @@ module.exports.editProfile = async (req, res) => {
     }
 };
 
+module.exports.uploadAvatar = async (req, res) => {
+    try {
+        let file = req.file;
+        const validExtensions = ['jpg', 'jpeg', 'png'];
+        const fileExtension = file.originalname.split('.').pop().toLowerCase();
+        if (!validExtensions.includes(fileExtension)) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({
+                success: false,
+                message: "Only JPG, JPEG, and PNG files are allowed."
+            });
+        }
+
+        let path = `${process.env.COMPANY_ADMIN_AVATAR}/${file.filename}`;
+        return handleResponse(res, 201, true, "Avatar uploaded successfully.", path);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+/** ==== Company ===== */
+
+module.exports.uploadCompanyLogo = async (req, res) => {
+    try {
+        let file = req.file;
+        const validExtensions = ['jpg', 'jpeg', 'png'];
+        const fileExtension = file.originalname.split('.').pop().toLowerCase();
+        if (!validExtensions.includes(fileExtension)) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({
+                success: false,
+                message: "Only JPG, JPEG, and PNG files are allowed."
+            });
+        }
+
+        let path = `${process.env.COMPANY_LOGO_LINK}/${file.filename}`;
+        return handleResponse(res, 201, true, "Company Logo uploaded successfully.", path);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+//edit company details
+
+module.exports.editCompanyDetails = async (req, res) => {
+    try {
+        let { id } = req.user;
+        let { company_id, company_name, company_email, description, company_address, company_logo, company_website, location, latitude, longitude, company_contact_number } = req.body
+        if (!company_id || !company_name || !company_email || !company_contact_number || !company_address || !company_logo || !location) {
+            return handleResponse(res, 400, false, "Please provide all the Fields.")
+        }
+
+        let isValidCId = isValidUUID(company_id)
+        if (!isValidCId) {
+            return handleResponse(res, 400, false, "Invalid Company Id")
+        }
+
+        let errors = await companyAdminValidation.editCompanyValidation(req, res);
+        if (!errors.isEmpty()) {
+            const firstError = errors.array()[0].msg;
+            return handleResponse(res, 400, false, firstError);
+        }
+
+        await connection.query("BEGIN");
+        let s1 = dbScript(db_sql["Q16"], { var1: id });
+        let findCompanyAdmin = await connection.query(s1);
+        if (findCompanyAdmin.rowCount > 0) {
+            let s1 = dbScript(db_sql["Q27"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: description ? mysql_real_escape_string(description) : null, var4: mysql_real_escape_string(company_address), var5: company_logo, var6: company_website ? mysql_real_escape_string(company_website) : null, var7: location, var8: latitude ? latitude : null, var9: longitude ? longitude : null, var10: company_contact_number, var11: id, var12: company_id });
+            let updateCompanyDetails = await connection.query(s1);
+            if (updateCompanyDetails.rowCount > 0) {
+                // await connection.query("COMMIT")
+                return handleResponse(res, 200, true, "Company Details Updated Successfully.", updateCompanyDetails.rows);
+            } else {
+                await connection.query("ROLLBACK");
+                return handleSWRError(res);
+            }
+        } else {
+            return handleResponse(res, 401, false, "Admin not found");
+        }
+    } catch (error) {
+        await connection.query("ROLLBACK");
+        return handleCatchErrors(res, error);
+    }
+}
+
+
 /** ========card section===== */
 
 module.exports.createCard = async (req, res) => {
@@ -333,8 +425,8 @@ module.exports.createCard = async (req, res) => {
                 length: 5,
                 charset: "alphanumeric",
             });
-            let qrCodeLink = `http://localhost:3000/qrCode/${companyName}/${card_ref}`;
-            let databaseLinkQR = `http://localhost:3007/qrCode/${companyName}/${card_ref}.png`;
+            let qrCodeLink = `http://localhost:3000/qrCode/${companyName}/${card_ref}`; //link which will be seen after scanning qr code
+            let databaseLinkQR = `http://localhost:3007/qrCode/${companyName}/${card_ref}.png`; //link of qr code saved in backend folder
             let qrCodeDirectory = path.join(__dirname, "../../", "./uploads", "qrCode", companyName
             );
             let qrCodeFileName = `${card_ref}.png`;
@@ -365,7 +457,6 @@ module.exports.createCard = async (req, res) => {
                         insta_link = insta_link || null;
                         extra_link_title = extra_link_title || null;
                         extra_link_url = extra_link_url || null;
-                        console.log(fb_link, insta_link, extra_link_title);
                         let s3 = dbScript(db_sql["Q18"], {
                             var1: mysql_real_escape_string(fb_link), var2: mysql_real_escape_string(insta_link), var3: extra_link_title ? mysql_real_escape_string(extra_link_title) : null, var4: extra_link_url ? mysql_real_escape_string(extra_link_url) : null, var5: insertData.rows[0].id,
                         });
@@ -375,7 +466,6 @@ module.exports.createCard = async (req, res) => {
                         var1: Number(usedCards) + 1, var2: findCompanyAdmin.rows[0].id,
                     });
                     let updateCardCount = await connection.query(s4);
-                    console.log(updateCardCount.rows[0]);
                     await connection.query("COMMIT");
                     return handleResponse(res, 201, true, "Card Created Successfully", insertData.rows[0]
                     );
@@ -494,7 +584,6 @@ module.exports.deactivateCard = async (req, res) => {
         if (findCompanyAdmin.rowCount > 0) {
             let s2 = dbScript(db_sql["Q22"], { var1: true, var2: card_id });
             let deactivateCard = await connection.query(s2);
-            console.log(deactivateCard.rows, "deactivate card");
             if (deactivateCard.rowCount > 0) {
                 let s3 = dbScript(db_sql["Q20"], {
                     var1: findCompanyAdmin.rows[0].used_cards - 1, var2: findCompanyAdmin.rows[0].id,
@@ -549,3 +638,97 @@ module.exports.card = async (req, res) => {
         return handleCatchErrors(res, error);
     }
 };
+
+module.exports.editCard = async (req, res) => {
+    try {
+        let { id } = req.user;
+        let { card_id, first_name, last_name, user_email, designation, bio, cover_pic, profile_picture, contact_number
+        } = req.body;
+        await connection.query("BEGIN");
+        let s1 = dbScript(db_sql["Q16"], { var1: id });
+        let findCompanyAdmin = await connection.query(s1);
+        if (findCompanyAdmin.rowCount > 0) {
+
+            let errors = await cardValidation.createCardVal(req, res);
+            if (!errors.isEmpty()) {
+                const firstError = errors.array()[0].msg;
+                return handleResponse(res, 400, false, firstError);
+            }
+
+            let s2 = dbScript(db_sql["Q25"], { var1: card_id });
+            let findCard = await connection.query(s2);
+            if (findCard.rowCount > 0) {
+                let s3 = dbScript(db_sql["Q26"], {
+                    var1: mysql_real_escape_string(first_name), var2: mysql_real_escape_string(last_name), var3: mysql_real_escape_string(user_email.toLowerCase()), var4: mysql_real_escape_string(designation), var5: profile_picture, var6: (JSON.stringify(bio)), var7: cover_pic, var8: contact_number, var9: card_id
+                });
+                let editCardDetails = await connection.query(s3);
+                if (editCardDetails.rowCount > 0) {
+                    await connection.query("COMMIT")
+                    return handleResponse(res, 200, true, "Card Updated Successfully");
+                } else {
+                    await connection.query("ROLLBACK");
+                    return handleSWRError(res);
+                }
+            } else {
+                return handleResponse(res, 404, false, "Card not found");
+            }
+        } else {
+            return handleResponse(res, 401, false, "Admin not found");
+        }
+    } catch (error) {
+        await connection.query("ROLLBACK");
+        return handleCatchErrors(res, error);
+    }
+}
+
+//file upload for card section
+
+module.exports.uploadCardProfilePicture = async (req, res) => {
+    try {
+        let file = req.file
+        const validExtensions = ['jpg', 'jpeg', 'png'];
+        const fileExtension = file.originalname.split('.').pop().toLowerCase();
+        if (!validExtensions.includes(fileExtension)) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({
+                success: false,
+                message: "Only JPG, JPEG, and PNG files are allowed."
+            });
+        }
+        let path = `${process.env.CARD_PROFILE_PIC_LINK}/${file.filename}`;
+        return handleResponse(res, 201, true, "Card Profile Pic uploaded successfully.", path);
+    } catch (error) {
+        res.json({
+            success: false,
+            status: 400,
+            message: error.message
+        })
+    }
+}
+
+module.exports.uploadCardCoverPicture = async (req, res) => {
+    try {
+        let file = req.file
+        const validExtensions = ['jpg', 'jpeg', 'png'];
+        const fileExtension = file.originalname.split('.').pop().toLowerCase();
+        if (!validExtensions.includes(fileExtension)) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({
+                success: false,
+                message: "Only JPG, JPEG, and PNG files are allowed."
+            });
+        }
+        let path = `${process.env.CARD_COVER_PIC_LINK}/${file.filename}`;
+        return handleResponse(res, 201, true, "Card Cover Pic uploaded successfully.", path);
+    } catch (error) {
+        res.json({
+            success: false,
+            status: 400,
+            message: error.message
+        })
+    }
+}
+
+
+
+
