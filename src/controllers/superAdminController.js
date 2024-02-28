@@ -191,7 +191,7 @@ module.exports.editSAProfile = async (req, res) => {
         let s1 = dbScript(db_sql['Q3'], { var1: id })
         let findSuperAdmin = await connection.query(s1)
         if (findSuperAdmin.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q30'], { var1: name, var2: email, var3: id })
+            let s2 = dbScript(db_sql['Q30'], { var1: mysql_real_escape_string(name), var2: mysql_real_escape_string(email.toLowerCase()), var3: id })
             let updateProfile = await connection.query(s2)
             if (updateProfile.rowCount > 0) {
                 await connection.query("COMMIT")
