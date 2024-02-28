@@ -110,20 +110,20 @@ module.exports.forgetPassword = async (req, res) => {
         });
         const findCompanyAdmin = await connection.query(s1);
         if (findCompanyAdmin.rowCount > 0) {
-            let user = {
-                id: findCompanyAdmin.rows[0].id,
-                email: findCompanyAdmin.rows[0].email,
-                role: "Admin",
-            };
-            const resetToken = await issueJWT(user);
+            if (findCompanyAdmin.rows[0].is_active) {
+                let user = {
+                    id: findCompanyAdmin.rows[0].id,
+                    email: findCompanyAdmin.rows[0].email,
+                    role: "Admin",
+                };
+                const resetToken = await issueJWT(user);
 
-            return handleResponse(
-                res,
-                200,
-                true,
-                "Reset Password Link has been sent to the email.",
-                resetToken
-            );
+
+
+                return handleResponse(res, 200, true, "Reset Password Link has been sent to the email.");
+            } else {
+                return handleResponse(res, 401, false, "Account is Deactivated, Please Contact your administrator");
+            }
         } else {
             return handleResponse(res, 404, false, "Company Admin Not Found.");
         }
@@ -378,7 +378,7 @@ module.exports.editCompanyDetails = async (req, res) => {
             let s1 = dbScript(db_sql["Q27"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: description ? mysql_real_escape_string(description) : null, var4: mysql_real_escape_string(company_address), var5: company_logo, var6: company_website ? mysql_real_escape_string(company_website) : null, var7: location, var8: latitude ? latitude : null, var9: longitude ? longitude : null, var10: company_contact_number, var11: id, var12: company_id });
             let updateCompanyDetails = await connection.query(s1);
             if (updateCompanyDetails.rowCount > 0) {
-                // await connection.query("COMMIT")
+                await connection.query("COMMIT")
                 return handleResponse(res, 200, true, "Company Details Updated Successfully.", updateCompanyDetails.rows);
             } else {
                 await connection.query("ROLLBACK");
@@ -389,6 +389,21 @@ module.exports.editCompanyDetails = async (req, res) => {
         }
     } catch (error) {
         await connection.query("ROLLBACK");
+        return handleCatchErrors(res, error);
+    }
+}
+
+module.exports.companyDetails = async (req, res) => {
+    try {
+        let { id } = req.user;
+        let s1 = dbScript(db_sql["Q16"], { var1: id });
+        let findCompanyAdmin = await connection.query(s1);
+        if (findCompanyAdmin.rowCount > 0) {
+            return handleResponse(res, 200, true, "Company Details", findCompanyAdmin.rows);
+        } else {
+            return handleResponse(res, 401, false, "Admin not found");
+        }
+    } catch (error) {
         return handleCatchErrors(res, error);
     }
 }
