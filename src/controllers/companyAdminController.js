@@ -1,5 +1,5 @@
 const connection = require("../config/database");
-const { issueJWT } = require("../middleware/authMiddleware");
+const { issueJWT, verifyPassResTokenCA } = require("../middleware/authMiddleware");
 const { generateQRCode, isValidUUID } = require("../utils/helpers");
 const { mysql_real_escape_string } = require("../utils/helpers");
 const {
@@ -16,6 +16,7 @@ const {
 const { dbScript, db_sql, db_sql_ca } = require("../utils/dbscript");
 const fs = require("fs");
 const path = require("path");
+const { forgetPassword } = require("../utils/sendMail");
 
 /* Auth Section */
 
@@ -117,8 +118,8 @@ module.exports.forgetPassword = async (req, res) => {
                     role: "Admin",
                 };
                 const resetToken = await issueJWT(user);
-
-
+                const link = `${process.env.FORGET_PASSWORD_LINK}/${resetToken}`
+                forgetPassword(email.toLowerCase(), link, findCompanyAdmin.rows[0].first_name)
 
                 return handleResponse(res, 200, true, "Reset Password Link has been sent to the email.");
             } else {
@@ -136,49 +137,33 @@ module.exports.resetPassword = async (req, res) => {
     try {
         let { resetToken, password } = req.body;
 
-        if (!resetToken || !password) {
-            return handleResponse(
-                res,
-                400,
-                false,
-                "Password Reset Token & Password is required."
-            );
+        if (!resetToken) {
+            return handleResponse(res, 400, false, "Password Reset Token is required.");
         }
 
-        let errors = await companyAdminValidation.resetPasswordCAValidation(
-            req,
-            res
-        );
-
-        if (!errors.isEmpty()) {
-            const firstError = errors.array()[0].msg;
-            return handleResponse(res, 400, false, firstError);
-        }
-
-        let companyAdmin = await jwt.verifyPassResTokenCA(req);
+        let companyAdmin = await verifyPassResTokenCA(req);
 
         if (!companyAdmin || companyAdmin.role !== "Admin") {
             return handleResponse(res, 401, false, "Invalid or Unauthorized Token");
         }
-
-        await connection.query("BEGIN");
-
         if (companyAdmin) {
-            let s1 = dbScript(db_sql_ca["Q3"], {
-                var1: companyAdmin.id,
-            });
+
+            let errors = await companyAdminValidation.resetPasswordCAValidation(req, res);
+
+            if (!errors.isEmpty()) {
+                const firstError = errors.array()[0].msg;
+                return handleResponse(res, 400, false, firstError);
+            }
+            await connection.query("BEGIN");
+            let s1 = dbScript(db_sql_ca["Q3"], { var1: companyAdmin.id });
             let findCompanyAdmin = await connection.query(s1);
-            // console.log(findCompanyAdmin.rows[0]);
             if (findCompanyAdmin.rows[0]) {
                 let hashedPassword = await bcrypt.hash(password, 10);
-                let s2 = dbScript(db_sql_ca["Q4"], {
-                    var1: companyAdmin.id,
-                    var2: hashedPassword,
-                });
+                let s2 = dbScript(db_sql_ca["Q4"], { var1: companyAdmin.id, var2: hashedPassword, });
                 let resetPasswordCA = await connection.query(s2);
                 if (resetPasswordCA.rowCount > 0) {
                     await connection.query("COMMIT");
-                    handleResponse(res, 200, true, "Password Reset Successfully");
+                    handleResponse(res, 200, true, "Password Reset Successfully", resetPasswordCA.rows);
                 } else {
                     await connection.query("ROLLBACK");
                     handleSWRError(res);
@@ -249,13 +234,13 @@ module.exports.editProfile = async (req, res) => {
         let { id } = req.user;
         let { first_name, last_name, email, phone_number, mobile_number, avatar } =
             req.body;
-
+        if (!first_name || !last_name || !email) {
+            return handleResponse(res, 400, false, "Please Provide First Name and Last Name and Email");
+        }
         // Trimming the values
-        first_name = trimValue(first_name) || null;
-        last_name = trimValue(last_name) || null;
-        email = trimValue(email) || null;
-        phone_number = trimValue(phone_number) || null;
-        mobile_number = trimValue(mobile_number) || null;
+        first_name = trimValue(first_name);
+        last_name = trimValue(last_name);
+        email = trimValue(email);
 
         let errors = await companyAdminValidation.editProfileCAValidation(req, res);
         if (!errors.isEmpty()) {

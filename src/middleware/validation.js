@@ -198,14 +198,12 @@ const companyAdminValidation = {
     },
     resetPasswordCAValidation: async (req, res) => {
         const validationRules = [
-            body("resetToken")
-                .trim()
-                .isLength({ min: 1 })
-                .withMessage("resetToken is required"),
             body("password")
                 .trim()
                 .isLength({ min: 1 })
-                .withMessage("Password is required"),
+                .withMessage("Password is required")
+                .isLength({ min: 8 })
+                .withMessage("Minimum 8 Character is required"),
         ];
         await Promise.all(
             validationRules.map((validationRule) => validationRule.run(req))

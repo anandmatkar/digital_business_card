@@ -1,12 +1,13 @@
 const nodemailer = require("nodemailer");
+const { forgetPasswordFunction } = require("../templates/forgetPassword");
 
-module.exports.resetPasswordMail2 = async (email, link, userName) => {
+module.exports.forgetPassword = async (email, link, userName) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
-    let resetPass = resetPassTemplate.resetPassword(link, email, userName)
+    let resetPass = forgetPasswordFunction(link, email, userName)
 
     var ccAddresses = "";
     var bccAddresses = "";
@@ -14,13 +15,9 @@ module.exports.resetPasswordMail2 = async (email, link, userName) => {
     const smtpUsername = process.env.SMTP_USERNAME;
     const smtpPassword = process.env.SMTP_PASSWORD;
 
-    // The subject line of the email
     var subject = "Reset password";
-    // The email body for recipients with non-HTML email clients.
-    var body_text = `Please use the below link to reset your password`;
 
-    // The body of the email for recipients whose email clients support HTML contenty.
-    //var body_html= emailTem;
+    var body_text = `Please use the below link to reset your password`;
 
     let transporter = nodemailer.createTransport({
         host: smtpEndpoint,
@@ -32,7 +29,6 @@ module.exports.resetPasswordMail2 = async (email, link, userName) => {
         }
     });
 
-    // Specify the fields in the email.
     let mailOptions = {
         from: senderAddress,
         to: toAddresses,
@@ -41,7 +37,6 @@ module.exports.resetPasswordMail2 = async (email, link, userName) => {
         bcc: bccAddresses,
         text: body_text,
         html: resetPass,
-        // Custom headers for configuration set and message tags.
         headers: {}
     };
 
