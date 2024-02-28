@@ -413,6 +413,62 @@ module.exports.deactivateCompanyAndCompanyAdmin = async (req, res) => {
     }
 }
 
+module.exports.editCompanyAdmin = async (req, res) => {
+    try {
+        let { id } = req.user
+        let { admin_id, first_name, last_name, email, phone_number } = req.body
+
+        let errors = await superAdminValidation.editCompanyAdminValidation(req, res)
+        if (!errors.isEmpty()) {
+            const firstError = errors.array()[0].msg;
+            return handleResponse(res, 400, false, firstError)
+        }
+
+        await connection.query("BEGIN")
+        let s1 = dbScript(db_sql['Q3'], { var1: id })
+        let findSuperAdmin = await connection.query(s1)
+        if (findSuperAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q28'], { var1: mysql_real_escape_string(first_name), var2: mysql_real_escape_string(last_name), var3: email.toLowerCase(), var4: phone_number, var5: admin_id })
+            let updateDetails = await connection.query(s2)
+            if (updateDetails.rowCount > 0) {
+                await connection.query("COMMIT")
+                return handleResponse(res, 200, true, "Details Updated successfully")
+            } else {
+                await connection.query("ROLLBACK")
+                return handleSWRError(res);
+            }
+        } else {
+            return handleResponse(res, 401, false, "Super Admin Not Found")
+        }
+    } catch (error) {
+        await connection.query("ROLLBACK")
+        return handleCatchErrors(res, error);
+    }
+}
+
+module.exports.uploadCompanyLogoForSA = async (req, res) => {
+    try {
+        let file = req.file;
+        const validExtensions = ['jpg', 'jpeg', 'png'];
+        const fileExtension = file.originalname.split('.').pop().toLowerCase();
+        if (!validExtensions.includes(fileExtension)) {
+            fs.unlinkSync(file.path);
+            return res.status(400).json({
+                success: false,
+                message: "Only JPG, JPEG, and PNG files are allowed."
+            });
+        }
+
+        let path = `${process.env.COMPANY_LOGO_LINK}/${file.filename}`;
+        return handleResponse(res, 201, true, "Company Logo uploaded successfully.", path);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
 
 
 

@@ -1,6 +1,6 @@
 const connection = require("../config/database");
 const { issueJWT, verifyPassResTokenCA } = require("../middleware/authMiddleware");
-const { generateQRCode, isValidUUID } = require("../utils/helpers");
+const { generateQRCode, isValidUUID, formatCompanyName } = require("../utils/helpers");
 const { mysql_real_escape_string } = require("../utils/helpers");
 const {
     handleCatchErrors,
@@ -418,19 +418,19 @@ module.exports.createCard = async (req, res) => {
                 return handleResponse(res, 400, false, firstError);
             }
 
-            let companyName = findCompanyAdmin.rows[0].company_name.replace(/\s/g, ""
-            );
+            let companyName = formatCompanyName(findCompanyAdmin.rows[0].company_name)
+            console.log(companyName, "comapnyName");
             let company_ref = companyName;
             const card_ref = randomstring.generate({
                 length: 5,
                 charset: "alphanumeric",
             });
-            let qrCodeLink = `http://localhost:3000/qrCode/${companyName}/${card_ref}`; //link which will be seen after scanning qr code
-            let databaseLinkQR = `http://localhost:3007/qrCode/${companyName}/${card_ref}.png`; //link of qr code saved in backend folder
+            let qrCodeLink = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`; //link which will be seen after scanning qr code
+            let databaseLinkQR = `${process.env.DATABASE_LINK_FOR_QR}/${companyName}/${card_ref}.png`; //link of qr code saved in backend folder
             let qrCodeDirectory = path.join(__dirname, "../../", "./uploads", "qrCode", companyName
             );
             let qrCodeFileName = `${card_ref}.png`;
-            let card_link = `http://localhost:3000/qrCode/${companyName}/${card_ref}`;
+            let card_link = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`;
 
             fs.mkdirSync(qrCodeDirectory, { recursive: true });
 
@@ -498,6 +498,41 @@ module.exports.cardLists = async (req, res) => {
                 return handleResponse(res, 200, true, "Cards Lists", cards.rows);
             } else {
                 return handleResponse(res, 200, false, "Empty Cards Lists", []);
+            }
+        } else {
+            return handleResponse(res, 401, false, "Admin not found");
+        }
+    } catch (error) {
+        return handleCatchErrors(res, error);
+    }
+};
+
+//card details for admin
+module.exports.cardDetails = async (req, res) => {
+    try {
+        let { id } = req.user;
+        let { card_id } = req.body;
+        if (!card_ref || !comp_name) {
+            return handleResponse(res, 400, false, "Provide Valid Card and Company Input");
+        }
+        let s1 = dbScript(db_sql["Q16"], { var1: id });
+        let findCompanyAdmin = await connection.query(s1);
+        if (findCompanyAdmin.rowCount > 0) {
+            let s1 = dbScript(db_sql["Q19"], {
+                var1: mysql_real_escape_string(comp_name), var2: mysql_real_escape_string(card_ref), var3: false,
+            });
+            let findCardDetails = await connection.query(s1);
+            if (findCardDetails.rowCount > 0) {
+                if (findCardDetails.rows[0].is_active_for_qr) {
+                    return handleResponse(res, 200, true, "Card Details", findCardDetails.rows[0]
+                    );
+                } else {
+                    delete findCardDetails.rows[0].qr_url;
+                    return handleResponse(res, 200, true, "Card Details", findCardDetails.rows[0]
+                    );
+                }
+            } else {
+                return handleResponse(res, 404, false, "No cards Found");
             }
         } else {
             return handleResponse(res, 401, false, "Admin not found");

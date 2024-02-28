@@ -141,17 +141,32 @@ const superAdminValidation = {
                 .trim(),
             body('contact_person_mobile')
                 .optional()
-                .trim(),
-            body('latitude')
-                .optional()
                 .trim()
-                .isNumeric()
-                .withMessage('Latitude must be a number'),
-            body('longitude')
-                .optional()
+        ];
+
+        await Promise.all(validationRules.map(validationRule => validationRule.run(req)));
+
+        return errors = validationResult(req);
+    },
+
+    editCompanyAdminValidation: async (req, res) => {
+        const validationRules = [
+            body('first_name')
                 .trim()
-                .isNumeric()
-                .withMessage('Longitude must be a number'),
+                .isLength({ min: 1 })
+                .escape()
+                .withMessage('First Name is required'),
+            body('last_name')
+                .trim()
+                .isLength({ min: 1 })
+                .escape()
+                .withMessage('Last Name is required'),
+            body('email').isEmail().withMessage('Invalid Email address'),
+            body("phone_number")
+                .trim()
+                .optional()
+                .isMobilePhone("any", { strictMode: false })
+                .withMessage("Mobile Number is not valid"),
         ];
 
         await Promise.all(validationRules.map(validationRule => validationRule.run(req)));

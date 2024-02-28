@@ -1,6 +1,7 @@
 const express = require("express");
 const controller = require("../controllers/indexController");
 const { verifyTokenForSA } = require("../middleware/authMiddleware");
+const { uploadCompanyLogo } = require("../utils/uploadFiles");
 const router = express.Router();
 
 /**   Auth Section */
@@ -19,5 +20,7 @@ router.get('/companyDetails', verifyTokenForSA, controller.superAdminController.
 router.post('/createCompanyAdmin', verifyTokenForSA, controller.superAdminController.createCompanyAdmin)
 router.put('/editCompanyDetails', verifyTokenForSA, controller.superAdminController.editCompanyDetails)
 router.put('/deactivateCompanyAndCompanyAdmin', verifyTokenForSA, controller.superAdminController.deactivateCompanyAndCompanyAdmin)
+router.put('/editCompanyAdmin', verifyTokenForSA, controller.superAdminController.editCompanyAdmin)
+router.post('/uploadCompanyLogoForSA', verifyTokenForSA, uploadCompanyLogo.single('image'), controller.superAdminController.uploadCompanyLogoForSA)
 
 module.exports = router

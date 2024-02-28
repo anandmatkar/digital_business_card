@@ -46,3 +46,27 @@ module.exports.generateQRCode = async (url, directoryPath, fileName) => {
         return false;
     }
 }
+
+//company name formattor function
+module.exports.formatCompanyName = (companyName) => {
+    companyName = companyName.replace(/[^a-zA-Z\s']/g, '');
+
+    const words = companyName.split(' ').map(word => {
+        return word.replace(/[^a-zA-Z']/g, '');
+    });
+
+    let formattedName = '';
+
+    if (words.length === 1) {
+        formattedName = words[0];
+    } else if (words.length === 2) {
+        formattedName = words.join('');
+    } else {
+        formattedName = words.map(word => {
+            const firstLetter = word.charAt(0).toUpperCase();
+            return firstLetter;
+        }).join('');
+    }
+
+    return formattedName;
+}
