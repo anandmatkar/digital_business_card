@@ -2,7 +2,7 @@ const connection = require("../config/database");
 const { issueJWT } = require("../middleware/authMiddleware");
 const { superAdminValidation, trimValue } = require("../middleware/validation");
 const { dbScript, db_sql } = require("../utils/dbscript");
-const { mysql_real_escape_string } = require("../utils/helpers");
+const { mysql_real_escape_string, isValidUUID } = require("../utils/helpers");
 const { handleCatchErrors, handleSWRError, handleResponse } = require("../utils/response");
 const bcrypt = require('bcrypt')
 
@@ -169,6 +169,45 @@ module.exports.changePassword = async (req, res) => {
     }
 }
 
+module.exports.editSAProfile = async (req, res) => {
+    try {
+        let { id } = req.user
+        let { name, email } = req.body
+        name = name.toString().trim()
+        console.log(name);
+        if (!name || !email) {
+            return handleResponse(res, 400, false, "Name and Email are required.")
+        }
+
+        let errors = await superAdminValidation.editProfile(req, res)
+        if (!errors.isEmpty()) {
+            const firstError = errors.array()[0].msg;
+            return handleResponse(res, 400, false, firstError)
+        }
+
+
+
+        await connection.query("BEGIN")
+        let s1 = dbScript(db_sql['Q3'], { var1: id })
+        let findSuperAdmin = await connection.query(s1)
+        if (findSuperAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q30'], { var1: name, var2: email, var3: id })
+            let updateProfile = await connection.query(s2)
+            if (updateProfile.rowCount > 0) {
+                await connection.query("COMMIT")
+                return handleResponse(res, 200, true, "Profile Updated Successfully", updateProfile.rows)
+            } else {
+                await connection.query("ROLLBACK")
+                return handleSWRError(res);
+            }
+        } else {
+            return handleResponse(res, 401, false, "Super Admin Not Found")
+        }
+    } catch (error) {
+        await connection.query("ROLLBACK")
+        return handleCatchErrors(res, error);
+    }
+}
 /*   Company & Company Admin Section  */
 module.exports.createCompany = async (req, res) => {
     try {
@@ -241,12 +280,16 @@ module.exports.companyList = async (req, res) => {
         return handleCatchErrors(res, error);
     }
 }
-
 //company with company admin details 
 module.exports.companyDetails = async (req, res) => {
     try {
         let { id } = req.user;
         let { company_id } = req.query;
+
+        let isValidCId = isValidUUID(company_id)
+        if (!isValidCId) {
+            return handleResponse(res, 400, false, "Invalid Company Id")
+        }
 
         let s1 = dbScript(db_sql['Q3'], { var1: id })
         let findSuperAdmin = await connection.query(s1)
@@ -270,6 +313,11 @@ module.exports.createCompanyAdmin = async (req, res) => {
     try {
         let { id } = req.user
         let { first_name, last_name, email, password, mobile_number, company_id } = req.body
+
+        let isValidCId = isValidUUID(company_id)
+        if (!isValidCId) {
+            return handleResponse(res, 400, false, "Invalid Company Id")
+        }
 
         let errors = await superAdminValidation.createCompanyAdminValidation(req, res)
         if (!errors.isEmpty()) {
@@ -331,6 +379,11 @@ module.exports.editCompanyDetails = async (req, res) => {
             description, company_address, company_logo, company_website, contact_person_designation, contact_person_mobile, latitude, longitude
         } = req.body
 
+        let isValidCId = isValidUUID(company_id)
+        if (!isValidCId) {
+            return handleResponse(res, 400, false, "Invalid Company Id")
+        }
+
         // Trimming the values
         description = trimValue(description) || null
         company_address = trimValue(company_address) || null
@@ -388,6 +441,11 @@ module.exports.deactivateCompanyAndCompanyAdmin = async (req, res) => {
         if (status !== 'activated' && status !== 'deactivated') {
             return handleResponse(res, 400, false, "Invalid Status");
         }
+
+        let isValidCId = isValidUUID(company_id)
+        if (!isValidCId) {
+            return handleResponse(res, 400, false, "Invalid Company Id")
+        }
         await connection.query("BEGIN")
         let s1 = dbScript(db_sql['Q3'], { var1: id })
         let findSuperAdmin = await connection.query(s1)
@@ -417,6 +475,11 @@ module.exports.editCompanyAdmin = async (req, res) => {
     try {
         let { id } = req.user
         let { admin_id, first_name, last_name, email, phone_number } = req.body
+
+        let isValidCId = isValidUUID(admin_id)
+        if (!isValidCId) {
+            return handleResponse(res, 400, false, "Invalid Admin Id")
+        }
 
         let errors = await superAdminValidation.editCompanyAdminValidation(req, res)
         if (!errors.isEmpty()) {
@@ -468,6 +531,32 @@ module.exports.uploadCompanyLogoForSA = async (req, res) => {
         });
     }
 }
+//cards list for particular company
+module.exports.cardListsForSA = async (req, res) => {
+    try {
+        let { id } = req.user;
+        let { company_id } = req.query
+        let isValidCId = isValidUUID(company_id)
+        if (!isValidCId) {
+            return handleResponse(res, 400, false, "Invalid Company Id")
+        }
+        let s1 = dbScript(db_sql["Q3"], { var1: id });
+        let findCompanyAdmin = await connection.query(s1);
+        if (findCompanyAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql["Q29"], { var1: company_id });
+            let cards = await connection.query(s2);
+            if (cards.rowCount > 0) {
+                return handleResponse(res, 200, true, "Cards Lists", cards.rows);
+            } else {
+                return handleResponse(res, 200, false, "Empty Cards Lists", []);
+            }
+        } else {
+            return handleResponse(res, 401, false, "Super Admin not found");
+        }
+    } catch (error) {
+        return handleCatchErrors(res, error);
+    }
+};
 
 
 

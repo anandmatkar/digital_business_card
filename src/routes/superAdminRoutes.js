@@ -17,10 +17,12 @@ router.put('/changePassword', verifyTokenForSA, controller.superAdminController.
 router.post('/createCompany', verifyTokenForSA, controller.superAdminController.createCompany)
 router.get('/companyList', verifyTokenForSA, controller.superAdminController.companyList)
 router.get('/companyDetails', verifyTokenForSA, controller.superAdminController.companyDetails)
+router.get('/cardListsForSA', verifyTokenForSA, controller.superAdminController.cardListsForSA)
 router.post('/createCompanyAdmin', verifyTokenForSA, controller.superAdminController.createCompanyAdmin)
 router.put('/editCompanyDetails', verifyTokenForSA, controller.superAdminController.editCompanyDetails)
 router.put('/deactivateCompanyAndCompanyAdmin', verifyTokenForSA, controller.superAdminController.deactivateCompanyAndCompanyAdmin)
 router.put('/editCompanyAdmin', verifyTokenForSA, controller.superAdminController.editCompanyAdmin)
+router.put('/editSAProfile', verifyTokenForSA, controller.superAdminController.editSAProfile)
 router.post('/uploadCompanyLogoForSA', verifyTokenForSA, uploadCompanyLogo.single('image'), controller.superAdminController.uploadCompanyLogoForSA)
 
 module.exports = router

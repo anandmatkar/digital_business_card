@@ -174,8 +174,20 @@ const superAdminValidation = {
         return errors = validationResult(req);
     },
 
+    editProfile: async (req, res) => {
+        const validationRules = [
+            body('name')
+                .trim()
+                .isLength({ min: 1 })
+                .escape()
+                .withMessage('First Name is required'),
+            body('email').isEmail().withMessage('Invalid Email address'),
+        ];
 
+        await Promise.all(validationRules.map(validationRule => validationRule.run(req)));
 
+        return errors = validationResult(req);
+    },
 
 }
 const companyAdminValidation = {
