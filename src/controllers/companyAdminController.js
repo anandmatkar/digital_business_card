@@ -419,7 +419,6 @@ module.exports.createCard = async (req, res) => {
             }
 
             let companyName = formatCompanyName(findCompanyAdmin.rows[0].company_name)
-            console.log(companyName, "comapnyName");
             let company_ref = companyName;
             const card_ref = randomstring.generate({
                 length: 5,
@@ -486,13 +485,12 @@ module.exports.createCard = async (req, res) => {
                         });
 
                         let inserSocialMediaLinks = await connection.query(s3);
-                        console.log(inserSocialMediaLinks.rows, "111111111111111");
                     }
                     let s4 = dbScript(db_sql["Q20"], {
                         var1: Number(usedCards) + 1, var2: findCompanyAdmin.rows[0].id,
                     });
                     let updateCardCount = await connection.query(s4);
-                    // await connection.query("COMMIT");
+                    await connection.query("COMMIT");
                     return handleResponse(res, 201, true, "Card Created Successfully", insertData.rows[0]
                     );
                 } else {
@@ -534,19 +532,17 @@ module.exports.cardLists = async (req, res) => {
 };
 
 //card details for admin
-module.exports.cardDetails = async (req, res) => {
+module.exports.cardDetailsForCA = async (req, res) => {
     try {
         let { id } = req.user;
-        let { card_id } = req.body;
-        if (!card_ref || !comp_name) {
-            return handleResponse(res, 400, false, "Provide Valid Card and Company Input");
+        let { card_id } = req.query;
+        if (!card_id) {
+            return handleResponse(res, 400, false, "Provide Valid Card Id ");
         }
         let s1 = dbScript(db_sql["Q16"], { var1: id });
         let findCompanyAdmin = await connection.query(s1);
         if (findCompanyAdmin.rowCount > 0) {
-            let s1 = dbScript(db_sql["Q19"], {
-                var1: mysql_real_escape_string(comp_name), var2: mysql_real_escape_string(card_ref), var3: false,
-            });
+            let s1 = dbScript(db_sql["Q31"], { var1: card_id, var2: false, });
             let findCardDetails = await connection.query(s1);
             if (findCardDetails.rowCount > 0) {
                 if (findCardDetails.rows[0].is_active_for_qr) {
@@ -674,7 +670,6 @@ module.exports.deactivateCard = async (req, res) => {
 module.exports.card = async (req, res) => {
     try {
         let { comp_name, card_ref } = req.body;
-        console.log(comp_name, card_ref);
         if (!card_ref || !comp_name) {
             return handleResponse(res, 400, false, "Provide Valid Card and Company Input");
         }

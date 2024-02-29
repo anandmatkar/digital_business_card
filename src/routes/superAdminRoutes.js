@@ -17,6 +17,7 @@ router.post('/uploadSAProfile', verifyTokenForSA, uploadSAAvatar.single('image')
 
 router.post('/createCompany', verifyTokenForSA, controller.superAdminController.createCompany)
 router.get('/companyList', verifyTokenForSA, controller.superAdminController.companyList)
+router.get('/cardDetailsForSA', verifyTokenForSA, controller.superAdminController.cardDetailsForSA)
 router.get('/companyDetails', verifyTokenForSA, controller.superAdminController.companyDetails)
 router.get('/cardListsForSA', verifyTokenForSA, controller.superAdminController.cardListsForSA)
 router.post('/createCompanyAdmin', verifyTokenForSA, controller.superAdminController.createCompanyAdmin)

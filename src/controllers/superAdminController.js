@@ -4,7 +4,8 @@ const { superAdminValidation, trimValue } = require("../middleware/validation");
 const { dbScript, db_sql } = require("../utils/dbscript");
 const { mysql_real_escape_string, isValidUUID } = require("../utils/helpers");
 const { handleCatchErrors, handleSWRError, handleResponse } = require("../utils/response");
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
+const { card } = require("./companyAdminController");
 
 /*   Auth section  */
 
@@ -583,6 +584,39 @@ module.exports.cardListsForSA = async (req, res) => {
                 return handleResponse(res, 200, true, "Cards Lists", cards.rows);
             } else {
                 return handleResponse(res, 200, false, "Empty Cards Lists", []);
+            }
+        } else {
+            return handleResponse(res, 401, false, "Super Admin not found");
+        }
+    } catch (error) {
+        return handleCatchErrors(res, error);
+    }
+};
+
+//card details for admin
+module.exports.cardDetailsForSA = async (req, res) => {
+    try {
+        let { id } = req.user;
+        let { card_id } = req.query;
+        if (!card_id) {
+            return handleResponse(res, 400, false, "Provide Valid Card Id");
+        }
+        let s1 = dbScript(db_sql["Q3"], { var1: id });
+        let findCompanyAdmin = await connection.query(s1);
+        if (findCompanyAdmin.rowCount > 0) {
+            let s1 = dbScript(db_sql["Q31"], { var1: card_id, var2: false, });
+            let findCardDetails = await connection.query(s1);
+            if (findCardDetails.rowCount > 0) {
+                if (findCardDetails.rows[0].is_active_for_qr) {
+                    return handleResponse(res, 200, true, "Card Details", findCardDetails.rows[0]
+                    );
+                } else {
+                    delete findCardDetails.rows[0].qr_url;
+                    return handleResponse(res, 200, true, "Card Details", findCardDetails.rows[0]
+                    );
+                }
+            } else {
+                return handleResponse(res, 404, false, "No cards Found");
             }
         } else {
             return handleResponse(res, 401, false, "Super Admin not found");

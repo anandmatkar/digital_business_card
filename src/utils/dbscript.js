@@ -132,7 +132,7 @@ const db_sql = {
     Q30: `UPDATE super_admin SET name = '{var1}', email = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
     Q31: `SELECT dc.*,
           c.company_name,c.company_email,c.company_address,c.company_logo,c.company_contact_number,c.company_website,c.location, 
-          usm.facebook, usm.instagram, usm.extra_link_title, usm.extra_link_url, usm.whatsapp
+          usm.facebook, usm.instagram, usm.extra_link_title, usm.extra_link_url, usm.whatsapp,usm.we_chat,usm.linkedin, usm.twitter,usm.weibo, usm.xiao_hong_shu,usm.telegram,usm.youtube, usm.tiktok, usm.line
         FROM digital_cards dc
           LEFT JOIN company c on c.id = dc.company_id 
           LEFT JOIN user_media_link usm ON usm.digital_card_id = dc.id

@@ -22,6 +22,7 @@ router.post("/uploadAvatar", verifyTokenForCA, uploadCAAvatar.single('image'), c
 router.post("/createCard", verifyTokenForCA, controller.companyAdminController.createCard);
 router.get("/cardLists", verifyTokenForCA, controller.companyAdminController.cardLists);
 router.get("/vcf", controller.companyAdminController.vcf);
+router.get("/cardDetailsForCA", verifyTokenForCA, controller.companyAdminController.cardDetailsForCA);
 router.put("/activateSingleCardForQr", verifyTokenForCA, controller.companyAdminController.activateSingleCardForQr);
 router.put("/activateMultipleCardsForQR", verifyTokenForCA, controller.companyAdminController.activateMultipleCardsForQR);
 router.put("/deactivateCard", verifyTokenForCA, controller.companyAdminController.deactivateCard);
