@@ -360,6 +360,9 @@ module.exports.editCompanyDetails = async (req, res) => {
         let s1 = dbScript(db_sql["Q16"], { var1: id });
         let findCompanyAdmin = await connection.query(s1);
         if (findCompanyAdmin.rowCount > 0) {
+            if (findCompanyAdmin.rows[0].id !== company_id) {
+                return handleResponse(res, 400, false, "Provide Valid Company Id")
+            }
             let s1 = dbScript(db_sql["Q27"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: description ? mysql_real_escape_string(description) : null, var4: mysql_real_escape_string(company_address), var5: company_logo, var6: company_website ? mysql_real_escape_string(company_website) : null, var7: location, var8: latitude ? latitude : null, var9: longitude ? longitude : null, var10: company_contact_number, var11: id, var12: company_id });
             let updateCompanyDetails = await connection.query(s1);
             if (updateCompanyDetails.rowCount > 0) {
@@ -402,9 +405,11 @@ module.exports.createCard = async (req, res) => {
         let { first_name, last_name, user_email, designation, bio, cover_pic, profile_picture, contact_number, fb_link, insta_link, linkedin_link, whatsapp, youtube, xiao_hong_shu, tiktok, wechat, line, telegram, webio, twitter, extra_link_title, extra_link_url,
         } = req.body;
         await connection.query("BEGIN");
+
         let s1 = dbScript(db_sql["Q16"], { var1: id });
         let findCompanyAdmin = await connection.query(s1);
         if (findCompanyAdmin.rowCount > 0) {
+
             let usedCards = findCompanyAdmin.rows[0].used_cards;
             let maxCards = findCompanyAdmin.rows[0].max_cards;
             if (usedCards >= maxCards) {
@@ -474,7 +479,7 @@ module.exports.createCard = async (req, res) => {
                             var5: linkedin_link ? mysql_real_escape_string(linkedin_link) : null,
                             var6: twitter ? mysql_real_escape_string(twitter) : null,
                             var7: telegram ? mysql_real_escape_string(telegram) : null,
-                            var8: whatsapp ? whatsapp : null,
+                            var8: whatsapp ? (`https://wa.me/${whatsapp}`) : null,
                             var9: youtube ? mysql_real_escape_string(youtube) : null,
                             var10: tiktok ? mysql_real_escape_string(tiktok) : null,
                             var11: line ? mysql_real_escape_string(line) : null,
@@ -490,7 +495,7 @@ module.exports.createCard = async (req, res) => {
                         var1: Number(usedCards) + 1, var2: findCompanyAdmin.rows[0].id,
                     });
                     let updateCardCount = await connection.query(s4);
-                    await connection.query("COMMIT");
+                    // await connection.query("COMMIT");
                     return handleResponse(res, 201, true, "Card Created Successfully", insertData.rows[0]
                     );
                 } else {
@@ -803,8 +808,3 @@ module.exports.vcf = async (req, res) => {
         return handleCatchErrors(res, error);
     }
 };
-
-
-
-
-
