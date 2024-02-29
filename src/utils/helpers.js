@@ -70,3 +70,15 @@ module.exports.formatCompanyName = (companyName) => {
 
     return formattedName;
 }
+
+module.exports.generateVCard = (data) => {
+    let vCardString = `BEGIN:VCARD\nVERSION:3.0\n`;
+    vCardString += `FN:${data.first_name} ${data.last_name}\n`;
+    vCardString += `EMAIL;TYPE=INTERNET:${data.user_email}\n`;
+    vCardString += `TEL;TYPE=WORK,VOICE:${data.contact_number}\n`;
+    vCardString += `TITLE:${data.designation}\n`;
+    vCardString += `ORG:${data.company_name};${data.department || ''}\n`; // assuming department is available
+    // Add more fields if needed
+    vCardString += `END:VCARD`;
+    return vCardString;
+};

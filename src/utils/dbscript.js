@@ -129,7 +129,15 @@ const db_sql = {
     Q27: `UPDATE company SET company_name = '{var1}', company_email = '{var2}',description = '{var3}', company_address = '{var4}', company_logo = '{var5}', company_website = '{var6}', location = '{var7}', latitude = '{var8}', longitude = '{var9}', company_contact_number = '{var10}' WHERE admin_id = '{var11}' AND id = '{var12}' AND deleted_at IS NULL RETURNING *`,
     Q28: `UPDATE company_admin SET first_name = '{var1}' , last_name = '{var2}', email = '{var3}', phone_number = '{var4}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
     Q29: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,is_active_for_qr FROM digital_cards WHERE company_id = '{var1}' AND deleted_at IS NULL`,
-    Q30: `UPDATE super_admin SET name = '{var1}', email = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`
+    Q30: `UPDATE super_admin SET name = '{var1}', email = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
+    Q31: `SELECT dc.*,
+          c.company_name,c.company_email,c.company_address,c.company_logo,c.company_contact_number,c.company_website,c.location, 
+          usm.facebook, usm.instagram, usm.extra_link_title, usm.extra_link_url, usm.whatsapp
+        FROM digital_cards dc
+          LEFT JOIN company c on c.id = dc.company_id 
+          LEFT JOIN user_media_link usm ON usm.digital_card_id = dc.id
+        WHERE dc.id = '{var1}' AND dc.is_deactivated = '{var2}' 
+          AND dc.deleted_at IS NULL AND c.deleted_at IS NULL AND c.status = 'activated'`
 };
 
 const db_sql_ca = {
