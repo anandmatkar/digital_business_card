@@ -237,10 +237,6 @@ module.exports.editProfile = async (req, res) => {
         if (!first_name || !last_name || !email) {
             return handleResponse(res, 400, false, "Please Provide First Name and Last Name and Email");
         }
-        // Trimming the values
-        first_name = trimValue(first_name);
-        last_name = trimValue(last_name);
-        email = trimValue(email);
 
         let errors = await companyAdminValidation.editProfileCAValidation(req, res);
         if (!errors.isEmpty()) {
