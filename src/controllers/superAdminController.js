@@ -184,9 +184,6 @@ module.exports.editSAProfile = async (req, res) => {
             const firstError = errors.array()[0].msg;
             return handleResponse(res, 400, false, firstError)
         }
-
-
-
         await connection.query("BEGIN")
         let s1 = dbScript(db_sql['Q3'], { var1: id })
         let findSuperAdmin = await connection.query(s1)

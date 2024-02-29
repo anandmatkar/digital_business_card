@@ -110,7 +110,7 @@ const db_sql = {
             GROUP BY 
                 c.id;`,
     Q17: `INSERT INTO digital_cards (company_id, created_by, card_reference, first_name, last_name,user_email, designation,bio,qr_url, user_type,cover_pic,profile_picture,card_url,vcf_card_url,company_ref, contact_number ) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}') RETURNING *`,
-    Q18: `INSERT INTO user_media_link (facebook, instagram, extra_link_title, extra_link_url, digital_card_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+    Q18: `INSERT INTO user_media_link (facebook, instagram, extra_link_title, extra_link_url,linkedin,twitter,telegram,whatsapp, youtube,tiktok,line,we_chat,xiao_hong_shu,weibo, digital_card_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}','{var15}') RETURNING *`,
     Q19: `SELECT dc.*,
           c.company_name,c.company_email,c.company_address,c.company_logo,c.company_contact_number,c.company_website,c.location, 
           usm.facebook, usm.instagram, usm.extra_link_title, usm.extra_link_url, usm.whatsapp

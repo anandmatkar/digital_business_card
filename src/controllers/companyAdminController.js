@@ -399,7 +399,7 @@ module.exports.companyDetails = async (req, res) => {
 module.exports.createCard = async (req, res) => {
     try {
         let { id } = req.user;
-        let { first_name, last_name, user_email, designation, bio, cover_pic, profile_picture, contact_number, fb_link, insta_link, extra_link_title, extra_link_url,
+        let { first_name, last_name, user_email, designation, bio, cover_pic, profile_picture, contact_number, fb_link, insta_link, linkedin_link, whatsapp, youtube, xiao_hong_shu, tiktok, wechat, line, telegram, webio, twitter, extra_link_title, extra_link_url,
         } = req.body;
         await connection.query("BEGIN");
         let s1 = dbScript(db_sql["Q16"], { var1: id });
@@ -452,21 +452,47 @@ module.exports.createCard = async (req, res) => {
                 });
                 let insertData = await connection.query(s2);
                 if (insertData.rowCount > 0) {
-                    if (fb_link || insta_link || extra_link_title) {
+                    if (fb_link || insta_link || extra_link_title || linkedin_link || whatsapp || youtube || xiao_hong_shu || tiktok || wechat || line || telegram || webio || twitter) {
                         fb_link = fb_link || null;
                         insta_link = insta_link || null;
+                        linkedin_link = linkedin_link || null;
+                        whatsapp = whatsapp || null
+                        youtube = youtube || null
+                        xiao_hong_shu = xiao_hong_shu || null
+                        tiktok = tiktok || null
+                        wechat = wechat || null
+                        line = line || null
+                        telegram = telegram || null
+                        webio = webio || null
+                        twitter = twitter = null
                         extra_link_title = extra_link_title || null;
                         extra_link_url = extra_link_url || null;
                         let s3 = dbScript(db_sql["Q18"], {
-                            var1: mysql_real_escape_string(fb_link), var2: mysql_real_escape_string(insta_link), var3: extra_link_title ? mysql_real_escape_string(extra_link_title) : null, var4: extra_link_url ? mysql_real_escape_string(extra_link_url) : null, var5: insertData.rows[0].id,
+                            var1: mysql_real_escape_string(fb_link) ? mysql_real_escape_string(fb_link) : null,
+                            var2: mysql_real_escape_string(insta_link) ? mysql_real_escape_string(insta_link) : null,
+                            var3: extra_link_title ? mysql_real_escape_string(extra_link_title) : null,
+                            var4: extra_link_url ? mysql_real_escape_string(extra_link_url) : null,
+                            var5: linkedin_link ? mysql_real_escape_string(linkedin_link) : null,
+                            var6: twitter ? mysql_real_escape_string(twitter) : null,
+                            var7: telegram ? mysql_real_escape_string(telegram) : null,
+                            var8: whatsapp ? whatsapp : null,
+                            var9: youtube ? mysql_real_escape_string(youtube) : null,
+                            var10: tiktok ? mysql_real_escape_string(tiktok) : null,
+                            var11: line ? mysql_real_escape_string(line) : null,
+                            var12: wechat ? wechat : null,
+                            var13: xiao_hong_shu ? mysql_real_escape_string(xiao_hong_shu) : null,
+                            var14: webio ? mysql_real_escape_string(webio) : null,
+                            var15: insertData.rows[0].id
                         });
+
                         let inserSocialMediaLinks = await connection.query(s3);
+                        console.log(inserSocialMediaLinks.rows, "111111111111111");
                     }
                     let s4 = dbScript(db_sql["Q20"], {
                         var1: Number(usedCards) + 1, var2: findCompanyAdmin.rows[0].id,
                     });
                     let updateCardCount = await connection.query(s4);
-                    await connection.query("COMMIT");
+                    // await connection.query("COMMIT");
                     return handleResponse(res, 201, true, "Card Created Successfully", insertData.rows[0]
                     );
                 } else {
