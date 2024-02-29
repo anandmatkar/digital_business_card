@@ -137,7 +137,8 @@ const db_sql = {
           LEFT JOIN company c on c.id = dc.company_id 
           LEFT JOIN user_media_link usm ON usm.digital_card_id = dc.id
         WHERE dc.id = '{var1}' AND dc.is_deactivated = '{var2}' 
-          AND dc.deleted_at IS NULL AND c.deleted_at IS NULL AND c.status = 'activated'`
+          AND dc.deleted_at IS NULL AND c.deleted_at IS NULL AND c.status = 'activated'`,
+    Q32: `UPDATE super_admin SET avatar = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`
 };
 
 const db_sql_ca = {

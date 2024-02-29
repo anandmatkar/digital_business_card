@@ -57,9 +57,24 @@ const uploadCAAvatar = multer({
     storage: storage4
 })
 
+const storage5 = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/superadminAvatar')
+    },
+    filename: function (req, file, cb) {
+        const ext = file.mimetype.split('/')[1];
+        const fileName = `${file.originalname}${Date.now()}.${ext}`
+        cb(null, fileName)
+    }
+})
+const uploadSAAvatar = multer({
+    storage: storage5
+})
+
 module.exports = {
     uploadCardProfilePic,
     uploadCardCoverePic,
     uploadCompanyLogo,
-    uploadCAAvatar
+    uploadCAAvatar,
+    uploadSAAvatar
 }

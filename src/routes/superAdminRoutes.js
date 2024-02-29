@@ -1,7 +1,7 @@
 const express = require("express");
 const controller = require("../controllers/indexController");
 const { verifyTokenForSA } = require("../middleware/authMiddleware");
-const { uploadCompanyLogo } = require("../utils/uploadFiles");
+const { uploadCompanyLogo, uploadSAAvatar } = require("../utils/uploadFiles");
 const router = express.Router();
 
 /**   Auth Section */
@@ -11,6 +11,7 @@ router.post('/registerSuperAdmin', controller.superAdminController.registerSuper
 router.post('/loginSuperAdmin', controller.superAdminController.loginSuperAdmin)
 router.get('/showSAProfile', verifyTokenForSA, controller.superAdminController.showSAProfile)
 router.put('/changePassword', verifyTokenForSA, controller.superAdminController.changePassword)
+router.post('/uploadSAProfile', verifyTokenForSA, uploadSAAvatar.single('image'), controller.superAdminController.uploadSAProfile)
 
 /**   Company and company admin Section */
 
