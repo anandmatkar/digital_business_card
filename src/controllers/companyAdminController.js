@@ -431,7 +431,7 @@ module.exports.createCard = async (req, res) => {
                 let qrCodeDirectory = path.join(__dirname, "../../", "./uploads", "qrCode", companyName
                 );
                 let qrCodeFileName = `${card_ref}.png`;
-                let card_link = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`;
+                let card_link = `${process.env.LINK_OF_DIGITAL_CARD}/${companyName}/${card_ref}`;
 
                 fs.mkdirSync(qrCodeDirectory, { recursive: true });
 
