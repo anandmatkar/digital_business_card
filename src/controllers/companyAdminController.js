@@ -17,6 +17,7 @@ const { dbScript, db_sql, db_sql_ca } = require("../utils/dbscript");
 const fs = require("fs");
 const path = require("path");
 const { forgetPassword } = require("../utils/sendMail");
+const { json } = require("express");
 
 /* Auth Section */
 
@@ -334,7 +335,7 @@ module.exports.uploadCompanyLogo = async (req, res) => {
 module.exports.editCompanyDetails = async (req, res) => {
     try {
         let { id } = req.user;
-        let { company_id, company_name, company_email, description, company_address, company_logo, company_website, location, latitude, longitude, company_contact_number } = req.body
+        let { company_id, company_name, company_email, description, company_address, company_logo, company_website, location, latitude, longitude, company_contact_number, product_service } = req.body
         if (!company_id || !company_name || !company_email || !company_contact_number) {
             return handleResponse(res, 400, false, "Please provide all the Fields.")
         }
@@ -357,10 +358,10 @@ module.exports.editCompanyDetails = async (req, res) => {
             if (findCompanyAdmin.rows[0].id !== company_id) {
                 return handleResponse(res, 400, false, "Provide Valid Company Id")
             }
-            let s1 = dbScript(db_sql["Q27"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: description ? mysql_real_escape_string(description) : null, var4: mysql_real_escape_string(company_address), var5: company_logo, var6: company_website ? mysql_real_escape_string(company_website) : null, var7: location, var8: latitude ? latitude : null, var9: longitude ? longitude : null, var10: company_contact_number, var11: id, var12: company_id });
+            let s1 = dbScript(db_sql["Q27"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: description ? mysql_real_escape_string(description) : null, var4: mysql_real_escape_string(company_address), var5: company_logo, var6: company_website ? mysql_real_escape_string(company_website) : null, var7: location, var8: latitude ? latitude : null, var9: longitude ? longitude : null, var10: company_contact_number, var11: product_service ? mysql_real_escape_string(product_service) : null, var12: id, var13: company_id });
             let updateCompanyDetails = await connection.query(s1);
             if (updateCompanyDetails.rowCount > 0) {
-                await connection.query("COMMIT")
+                // await connection.query("COMMIT")
                 return handleResponse(res, 200, true, "Company Details Updated Successfully.", updateCompanyDetails.rows);
             } else {
                 await connection.query("ROLLBACK");
@@ -389,7 +390,6 @@ module.exports.companyDetails = async (req, res) => {
         return handleCatchErrors(res, error);
     }
 }
-
 
 /** ========card section===== */
 

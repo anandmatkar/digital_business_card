@@ -112,7 +112,7 @@ const db_sql = {
     Q17: `INSERT INTO digital_cards (company_id, created_by, card_reference, first_name, last_name,user_email, designation,bio,qr_url, user_type,cover_pic,profile_picture,card_url,vcf_card_url,company_ref, contact_number ) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}') RETURNING *`,
     Q18: `INSERT INTO user_media_link (facebook, instagram, extra_link_title, extra_link_url,linkedin,twitter,telegram,whatsapp, youtube,tiktok,line,we_chat,xiao_hong_shu,weibo, digital_card_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}','{var15}') RETURNING *`,
     Q19: `SELECT dc.*,
-          c.company_name,c.company_email,c.company_address,c.company_logo,c.company_contact_number,c.company_website,c.location, 
+          c.company_name,c.company_email,c.company_address,c.company_logo,c.company_contact_number,c.company_website,c.location, c.product_service,
           usm.facebook, usm.instagram, usm.extra_link_title, usm.extra_link_url, usm.whatsapp
         FROM digital_cards dc
           LEFT JOIN company c on c.id = dc.company_id 
@@ -126,7 +126,7 @@ const db_sql = {
     Q24: `UPDATE digital_cards SET is_active_for_qr = '{var1}' WHERE id IN ('{var2}') AND deleted_at IS NULL RETURNING *`,
     Q25: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,is_active_for_qr FROM digital_cards WHERE id = '{var1}' AND deleted_at IS NULL`,
     Q26: `UPDATE digital_cards SET first_name = '{var1}', last_name = '{var2}',user_email = '{var3}',designation = '{var4}',profile_picture = '{var5}', bio = '{var6}', cover_pic = '{var7}', contact_number = '{var8}' WHERE id = '{var9}' AND deleted_at IS NULL RETURNING *`,
-    Q27: `UPDATE company SET company_name = '{var1}', company_email = '{var2}',description = '{var3}', company_address = '{var4}', company_logo = '{var5}', company_website = '{var6}', location = '{var7}', latitude = '{var8}', longitude = '{var9}', company_contact_number = '{var10}' WHERE admin_id = '{var11}' AND id = '{var12}' AND deleted_at IS NULL RETURNING *`,
+    Q27: `UPDATE company SET company_name = '{var1}', company_email = '{var2}',description = '{var3}', company_address = '{var4}', company_logo = '{var5}', company_website = '{var6}', location = '{var7}', latitude = '{var8}', longitude = '{var9}', company_contact_number = '{var10}', product_service = '{var11}' WHERE admin_id = '{var12}' AND id = '{var13}' AND deleted_at IS NULL RETURNING *`,
     Q28: `UPDATE company_admin SET first_name = '{var1}' , last_name = '{var2}', email = '{var3}', phone_number = '{var4}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
     Q29: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,is_active_for_qr FROM digital_cards WHERE company_id = '{var1}' AND deleted_at IS NULL`,
     Q30: `UPDATE super_admin SET name = '{var1}', email = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
