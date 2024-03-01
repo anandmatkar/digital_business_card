@@ -673,7 +673,7 @@ module.exports.deactivateCard = async (req, res) => {
 //cards details using companyName and card ids
 module.exports.card = async (req, res) => {
     try {
-        let { comp_name, card_ref } = req.body;
+        let { comp_name, card_ref } = req.query;
         if (!card_ref || !comp_name) {
             return handleResponse(res, 400, false, "Provide Valid Card and Company Input");
         }
