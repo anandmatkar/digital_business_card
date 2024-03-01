@@ -308,12 +308,6 @@ const companyAdminValidation = {
                 .optional()
                 .trim()
                 .escape(),
-            body('company_website')
-                .optional()
-                .trim()
-                .escape()
-                .isURL({ require_protocol: false })
-                .withMessage('Invalid Website URL'),
             body('company_address')
                 .trim()
                 .isLength({ min: 1 })
