@@ -313,24 +313,11 @@ const companyAdminValidation = {
                 .isLength({ min: 1 })
                 .escape()
                 .withMessage('Company Address is required'),
-            body('company_logo')
-                .trim()
-                .isLength({ min: 1 })
-                .escape()
-                .withMessage('Company Logo is required'),
-            body('location')
-                .trim()
-                .isLength({ min: 1 })
-                .escape()
-                .withMessage('Location is required'),
-            body('latitude')
-                .optional()
-                .isNumeric()
-                .withMessage('Latitude must be numeric'),
-            body('longitude')
-                .optional()
-                .isNumeric()
-                .withMessage('Longitude must be numeric'),
+            // body('location')
+            //     .trim()
+            //     .isLength({ min: 1 })
+            //     .escape()
+            //     .withMessage('Location is required'),
             body('company_contact_number')
                 .trim()
                 .escape()
