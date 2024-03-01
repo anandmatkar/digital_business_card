@@ -403,102 +403,107 @@ module.exports.createCard = async (req, res) => {
         let s1 = dbScript(db_sql["Q16"], { var1: id });
         let findCompanyAdmin = await connection.query(s1);
         if (findCompanyAdmin.rowCount > 0) {
+            let s0 = dbScript(db_sql["Q34"], { var1: mysql_real_escape_string(user_email.toLowerCase()) });
+            let checkEmailInDC = await connection.query(s0);
+            if (checkEmailInDC.rowCount == 0) {
 
-            let usedCards = findCompanyAdmin.rows[0].used_cards;
-            let maxCards = findCompanyAdmin.rows[0].max_cards;
-            if (usedCards >= maxCards) {
-                return handleResponse(res, 400, false, "Maximum cards limit reached for this company"
-                );
-            }
-
-            let errors = await cardValidation.createCardVal(req, res);
-            if (!errors.isEmpty()) {
-                const firstError = errors.array()[0].msg;
-                return handleResponse(res, 400, false, firstError);
-            }
-
-            let companyName = formatCompanyName(findCompanyAdmin.rows[0].company_name)
-            let company_ref = companyName;
-            const card_ref = randomstring.generate({
-                length: 5,
-                charset: "alphanumeric",
-            });
-            let qrCodeLink = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`; //link which will be seen after scanning qr code
-            let databaseLinkQR = `${process.env.DATABASE_LINK_FOR_QR}/${companyName}/${card_ref}.png`; //link of qr code saved in backend folder
-            let qrCodeDirectory = path.join(__dirname, "../../", "./uploads", "qrCode", companyName
-            );
-            let qrCodeFileName = `${card_ref}.png`;
-            let card_link = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`;
-
-            fs.mkdirSync(qrCodeDirectory, { recursive: true });
-
-            let qrSuccess = await generateQRCode(
-                qrCodeLink,
-                qrCodeDirectory,
-                qrCodeFileName
-            );
-            if (qrSuccess) {
-                cover_pic = cover_pic ? cover_pic : process.env.DEFAULT_CARD_COVER_PIC;
-                profile_picture = profile_picture
-                    ? profile_picture
-                    : process.env.DEFAULT_USER_PROFILE_PIC;
-                let created_by =
-                    findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
-
-                let s2 = dbScript(db_sql["Q17"], {
-                    var1: findCompanyAdmin.rows[0].id, var2: created_by, var3: card_ref, var4: mysql_real_escape_string(first_name), var5: mysql_real_escape_string(last_name), var6: mysql_real_escape_string(user_email.toLowerCase()), var7: mysql_real_escape_string(designation), var8: mysql_real_escape_string(bio), var9: databaseLinkQR, var10: "user", var11: mysql_real_escape_string(cover_pic), var12: mysql_real_escape_string(profile_picture), var13: card_link, var14: null, var15: company_ref, var16: contact_number,
-                });
-                let insertData = await connection.query(s2);
-                if (insertData.rowCount > 0) {
-                    if (fb_link || insta_link || extra_link_title || linkedin_link || whatsapp || youtube || xiao_hong_shu || tiktok || wechat || line || telegram || webio || twitter) {
-                        fb_link = fb_link || null;
-                        insta_link = insta_link || null;
-                        linkedin_link = linkedin_link || null;
-                        whatsapp = whatsapp || null
-                        youtube = youtube || null
-                        xiao_hong_shu = xiao_hong_shu || null
-                        tiktok = tiktok || null
-                        wechat = wechat || null
-                        line = line || null
-                        telegram = telegram || null
-                        webio = webio || null
-                        twitter = twitter = null
-                        extra_link_title = extra_link_title || null;
-                        extra_link_url = extra_link_url || null;
-                        let s3 = dbScript(db_sql["Q18"], {
-                            var1: mysql_real_escape_string(fb_link) ? mysql_real_escape_string(fb_link) : null,
-                            var2: mysql_real_escape_string(insta_link) ? mysql_real_escape_string(insta_link) : null,
-                            var3: extra_link_title ? mysql_real_escape_string(extra_link_title) : null,
-                            var4: extra_link_url ? mysql_real_escape_string(extra_link_url) : null,
-                            var5: linkedin_link ? mysql_real_escape_string(linkedin_link) : null,
-                            var6: twitter ? mysql_real_escape_string(twitter) : null,
-                            var7: telegram ? mysql_real_escape_string(telegram) : null,
-                            var8: whatsapp ? (`https://wa.me/${whatsapp}`) : null,
-                            var9: youtube ? mysql_real_escape_string(youtube) : null,
-                            var10: tiktok ? mysql_real_escape_string(tiktok) : null,
-                            var11: line ? mysql_real_escape_string(line) : null,
-                            var12: wechat ? wechat : null,
-                            var13: xiao_hong_shu ? mysql_real_escape_string(xiao_hong_shu) : null,
-                            var14: webio ? mysql_real_escape_string(webio) : null,
-                            var15: insertData.rows[0].id
-                        });
-
-                        let inserSocialMediaLinks = await connection.query(s3);
-                    }
-                    let s4 = dbScript(db_sql["Q20"], {
-                        var1: Number(usedCards) + 1, var2: findCompanyAdmin.rows[0].id,
-                    });
-                    let updateCardCount = await connection.query(s4);
-                    // await connection.query("COMMIT");
-                    return handleResponse(res, 201, true, "Card Created Successfully", insertData.rows[0]
+                let usedCards = findCompanyAdmin.rows[0].used_cards;
+                let maxCards = findCompanyAdmin.rows[0].max_cards;
+                if (usedCards >= maxCards) {
+                    return handleResponse(res, 400, false, "Maximum cards limit reached for this company"
                     );
+                }
+
+                let errors = await cardValidation.createCardVal(req, res);
+                if (!errors.isEmpty()) {
+                    const firstError = errors.array()[0].msg;
+                    return handleResponse(res, 400, false, firstError);
+                }
+
+                let companyName = formatCompanyName(findCompanyAdmin.rows[0].company_name)
+                let company_ref = companyName;
+                const card_ref = randomstring.generate({
+                    length: 5,
+                    charset: "alphanumeric",
+                });
+                let qrCodeLink = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`; //link which will be seen after scanning qr code
+                let databaseLinkQR = `${process.env.DATABASE_LINK_FOR_QR}/${companyName}/${card_ref}.png`; //link of qr code saved in backend folder
+                let qrCodeDirectory = path.join(__dirname, "../../", "./uploads", "qrCode", companyName
+                );
+                let qrCodeFileName = `${card_ref}.png`;
+                let card_link = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`;
+
+                fs.mkdirSync(qrCodeDirectory, { recursive: true });
+
+                let qrSuccess = await generateQRCode(
+                    qrCodeLink,
+                    qrCodeDirectory,
+                    qrCodeFileName
+                );
+                if (qrSuccess) {
+                    cover_pic = cover_pic ? cover_pic : process.env.DEFAULT_CARD_COVER_PIC;
+                    profile_picture = profile_picture
+                        ? profile_picture
+                        : process.env.DEFAULT_USER_PROFILE_PIC;
+                    let created_by =
+                        findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
+
+                    let s2 = dbScript(db_sql["Q17"], {
+                        var1: findCompanyAdmin.rows[0].id, var2: created_by, var3: card_ref, var4: mysql_real_escape_string(first_name), var5: mysql_real_escape_string(last_name), var6: mysql_real_escape_string(user_email.toLowerCase()), var7: mysql_real_escape_string(designation), var8: mysql_real_escape_string(bio), var9: databaseLinkQR, var10: "user", var11: mysql_real_escape_string(cover_pic), var12: mysql_real_escape_string(profile_picture), var13: card_link, var14: null, var15: company_ref, var16: contact_number,
+                    });
+                    let insertData = await connection.query(s2);
+                    if (insertData.rowCount > 0) {
+                        if (fb_link || insta_link || extra_link_title || linkedin_link || whatsapp || youtube || xiao_hong_shu || tiktok || wechat || line || telegram || webio || twitter) {
+                            fb_link = fb_link || null;
+                            insta_link = insta_link || null;
+                            linkedin_link = linkedin_link || null;
+                            whatsapp = whatsapp || null
+                            youtube = youtube || null
+                            xiao_hong_shu = xiao_hong_shu || null
+                            tiktok = tiktok || null
+                            wechat = wechat || null
+                            line = line || null
+                            telegram = telegram || null
+                            webio = webio || null
+                            twitter = twitter = null
+                            extra_link_title = extra_link_title || null;
+                            extra_link_url = extra_link_url || null;
+                            let s3 = dbScript(db_sql["Q18"], {
+                                var1: mysql_real_escape_string(fb_link) ? mysql_real_escape_string(fb_link) : null,
+                                var2: mysql_real_escape_string(insta_link) ? mysql_real_escape_string(insta_link) : null,
+                                var3: extra_link_title ? mysql_real_escape_string(extra_link_title) : null,
+                                var4: extra_link_url ? mysql_real_escape_string(extra_link_url) : null,
+                                var5: linkedin_link ? mysql_real_escape_string(linkedin_link) : null,
+                                var6: twitter ? mysql_real_escape_string(twitter) : null,
+                                var7: telegram ? mysql_real_escape_string(telegram) : null,
+                                var8: whatsapp ? (`https://wa.me/${whatsapp}`) : null,
+                                var9: youtube ? mysql_real_escape_string(youtube) : null,
+                                var10: tiktok ? mysql_real_escape_string(tiktok) : null,
+                                var11: line ? mysql_real_escape_string(line) : null,
+                                var12: wechat ? wechat : null,
+                                var13: xiao_hong_shu ? mysql_real_escape_string(xiao_hong_shu) : null,
+                                var14: webio ? mysql_real_escape_string(webio) : null,
+                                var15: insertData.rows[0].id
+                            });
+
+                            let inserSocialMediaLinks = await connection.query(s3);
+                        }
+                        let s4 = dbScript(db_sql["Q20"], {
+                            var1: Number(usedCards) + 1, var2: findCompanyAdmin.rows[0].id,
+                        });
+                        let updateCardCount = await connection.query(s4);
+                        await connection.query("COMMIT");
+                        return handleResponse(res, 201, true, "Card Created Successfully", insertData.rows);
+                    } else {
+                        await connection.query("ROLLBACK");
+                        return handleSWRError(res);
+                    }
                 } else {
                     await connection.query("ROLLBACK");
                     return handleSWRError(res);
                 }
             } else {
-                await connection.query("ROLLBACK");
-                return handleSWRError(res);
+                return handleResponse(res, 409, false, "Email Already Exists");
             }
         } else {
             return handleResponse(res, 401, false, "Admin not found");

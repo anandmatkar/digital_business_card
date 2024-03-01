@@ -139,7 +139,8 @@ const db_sql = {
         WHERE dc.id = '{var1}' AND dc.is_deactivated = '{var2}' 
           AND dc.deleted_at IS NULL AND c.deleted_at IS NULL AND c.status = 'activated'`,
     Q32: `UPDATE super_admin SET avatar = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
-    Q33: `UPDATE digital_cards SET deleted_at = '{var1}' WHERE id = '{var2}' AND created_by = '{var3}' AND deleted_at IS NULL RETURNING *`
+    Q33: `UPDATE digital_cards SET deleted_at = '{var1}' WHERE id = '{var2}' AND created_by = '{var3}' AND deleted_at IS NULL RETURNING *`,
+    Q34: `SELECT * FROM digital_cards WHERE user_email = '{var1}' AND deleted_at IS NULL AND is_deactivated = false`
 };
 
 const db_sql_ca = {
