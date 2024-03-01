@@ -330,14 +330,12 @@ module.exports.uploadCompanyLogo = async (req, res) => {
         });
     }
 }
-
 //edit company details
-
 module.exports.editCompanyDetails = async (req, res) => {
     try {
         let { id } = req.user;
         let { company_id, company_name, company_email, description, company_address, company_logo, company_website, location, latitude, longitude, company_contact_number } = req.body
-        if (!company_id || !company_name || !company_email || !company_contact_number || !company_address || !company_logo || !location) {
+        if (!company_id || !company_name || !company_email || !company_contact_number) {
             return handleResponse(res, 400, false, "Please provide all the Fields.")
         }
 
@@ -804,3 +802,38 @@ module.exports.vcf = async (req, res) => {
         return handleCatchErrors(res, error);
     }
 };
+
+module.exports.deleteCard = async (req, res) => {
+    try {
+        let { id } = req.user;
+        let { card_id } = req.query;
+        await connection.query("BEGIN");
+        let s1 = dbScript(db_sql["Q16"], { var1: id });
+        let findCompanyAdmin = await connection.query(s1);
+        if (findCompanyAdmin.rowCount > 0) {
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql["Q33"], { var1: _dt, var2: card_id, var3: id });
+            let deleteCard = await connection.query(s2);
+            if (deleteCard.rowCount > 0) {
+                let usedCards = findCompanyAdmin.rows[0].used_cards
+                let s3 = dbScript(db_sql["Q20"], { var1: Number(usedCards) - 1, var2: findCompanyAdmin.rows[0].id, });
+                let updateCardCount = await connection.query(s3);
+                if (updateCardCount.rowCount > 0) {
+                    await connection.query("COMMIT")
+                    return handleResponse(res, 200, true, "Card Deleted Sucessfully.", deleteCard.rows);
+                } else {
+                    await connection.query("ROLLBACK");
+                    return handleSWRError(res);
+                }
+            } else {
+                await connection.query("ROLLBACK");
+                return handleSWRError(res);
+            }
+        } else {
+            return handleResponse(res, 401, false, "Admin not found");
+        }
+    } catch (error) {
+        await connection.query("ROLLBACK");
+        return handleCatchErrors(res, error);
+    }
+}

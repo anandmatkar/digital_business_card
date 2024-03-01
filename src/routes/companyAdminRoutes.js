@@ -26,6 +26,7 @@ router.get("/cardDetailsForCA", verifyTokenForCA, controller.companyAdminControl
 router.put("/activateSingleCardForQr", verifyTokenForCA, controller.companyAdminController.activateSingleCardForQr);
 router.put("/activateMultipleCardsForQR", verifyTokenForCA, controller.companyAdminController.activateMultipleCardsForQR);
 router.put("/deactivateCard", verifyTokenForCA, controller.companyAdminController.deactivateCard);
+router.put("/deleteCard", verifyTokenForCA, controller.companyAdminController.deleteCard);
 router.put("/editCard", verifyTokenForCA, controller.companyAdminController.editCard);
 router.post("/uploadCardProfilePicture", verifyTokenForCA, uploadCardProfilePic.single("image"), controller.companyAdminController.uploadCardProfilePicture);
 router.post("/uploadCardCoverPicture", verifyTokenForCA, uploadCardCoverePic.single("image"), controller.companyAdminController.uploadCardCoverPicture);
