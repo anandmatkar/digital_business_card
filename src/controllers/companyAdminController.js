@@ -358,10 +358,10 @@ module.exports.editCompanyDetails = async (req, res) => {
             if (findCompanyAdmin.rows[0].id !== company_id) {
                 return handleResponse(res, 400, false, "Provide Valid Company Id")
             }
-            let s1 = dbScript(db_sql["Q27"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: description ? mysql_real_escape_string(description) : null, var4: mysql_real_escape_string(company_address), var5: company_logo, var6: company_website ? mysql_real_escape_string(company_website) : null, var7: location, var8: latitude ? latitude : null, var9: longitude ? longitude : null, var10: company_contact_number, var11: product_service ? mysql_real_escape_string(product_service) : null, var12: id, var13: company_id });
+            let s1 = dbScript(db_sql["Q27"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: description ? mysql_real_escape_string(description) : null, var4: mysql_real_escape_string(company_address), var5: company_logo, var6: company_website ? mysql_real_escape_string(company_website) : null, var7: location, var8: latitude ? latitude : null, var9: longitude ? longitude : null, var10: company_contact_number, var11: product_service ? JSON.stringify(product_service) : null, var12: id, var13: company_id });
             let updateCompanyDetails = await connection.query(s1);
             if (updateCompanyDetails.rowCount > 0) {
-                // await connection.query("COMMIT")
+                await connection.query("COMMIT")
                 return handleResponse(res, 200, true, "Company Details Updated Successfully.", updateCompanyDetails.rows);
             } else {
                 await connection.query("ROLLBACK");
@@ -449,7 +449,7 @@ module.exports.createCard = async (req, res) => {
                         findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
 
                     let s2 = dbScript(db_sql["Q17"], {
-                        var1: findCompanyAdmin.rows[0].id, var2: created_by, var3: card_ref, var4: mysql_real_escape_string(first_name), var5: mysql_real_escape_string(last_name), var6: mysql_real_escape_string(user_email.toLowerCase()), var7: mysql_real_escape_string(designation), var8: mysql_real_escape_string(bio), var9: databaseLinkQR, var10: "user", var11: mysql_real_escape_string(cover_pic), var12: mysql_real_escape_string(profile_picture), var13: card_link, var14: null, var15: company_ref, var16: contact_number,
+                        var1: findCompanyAdmin.rows[0].id, var2: created_by, var3: card_ref, var4: mysql_real_escape_string(first_name), var5: mysql_real_escape_string(last_name), var6: mysql_real_escape_string(user_email.toLowerCase()), var7: mysql_real_escape_string(designation), var8: bio ? JSON.stringify(bio) : null, var9: databaseLinkQR, var10: "user", var11: mysql_real_escape_string(cover_pic), var12: mysql_real_escape_string(profile_picture), var13: card_link, var14: null, var15: company_ref, var16: contact_number,
                     });
                     let insertData = await connection.query(s2);
                     if (insertData.rowCount > 0) {
@@ -719,7 +719,7 @@ module.exports.editCard = async (req, res) => {
             let findCard = await connection.query(s2);
             if (findCard.rowCount > 0) {
                 let s3 = dbScript(db_sql["Q26"], {
-                    var1: mysql_real_escape_string(first_name), var2: mysql_real_escape_string(last_name), var3: mysql_real_escape_string(user_email.toLowerCase()), var4: mysql_real_escape_string(designation), var5: profile_picture, var6: (JSON.stringify(bio)), var7: cover_pic, var8: contact_number, var9: card_id
+                    var1: mysql_real_escape_string(first_name), var2: mysql_real_escape_string(last_name), var3: mysql_real_escape_string(user_email.toLowerCase()), var4: mysql_real_escape_string(designation), var5: profile_picture, var6: bio ? JSON.stringify(bio) : null, var7: cover_pic, var8: contact_number, var9: card_id
                 });
                 let editCardDetails = await connection.query(s3);
                 if (editCardDetails.rowCount > 0) {
