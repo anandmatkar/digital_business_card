@@ -78,6 +78,7 @@ const db_sql = {
                 c.contact_person_designation,
                 c.contact_person_email, 
                 c.contact_person_mobile, 
+                c.product_service,
                 c.location, 
                 c.latitude, 
                 c.longitude, 
