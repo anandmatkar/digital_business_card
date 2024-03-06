@@ -430,9 +430,6 @@ module.exports.editCompanyDetails = async (req, res) => {
                 });
                 return product_service;
             }
-
-
-
             // Call the function to handle image data
             product_service = await handleImage(product_service);
 
@@ -529,7 +526,7 @@ module.exports.createCard = async (req, res) => {
                         findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
 
                     let s2 = dbScript(db_sql["Q17"], {
-                        var1: findCompanyAdmin.rows[0].id, var2: created_by, var3: card_ref, var4: mysql_real_escape_string(first_name), var5: mysql_real_escape_string(last_name), var6: mysql_real_escape_string(user_email.toLowerCase()), var7: mysql_real_escape_string(designation), var8: bio ? JSON.stringify(bio) : null, var9: databaseLinkQR, var10: "user", var11: mysql_real_escape_string(cover_pic), var12: mysql_real_escape_string(profile_picture), var13: card_link, var14: null, var15: company_ref, var16: contact_number,
+                        var1: findCompanyAdmin.rows[0].id, var2: created_by, var3: card_ref, var4: mysql_real_escape_string(first_name), var5: mysql_real_escape_string(last_name), var6: mysql_real_escape_string(user_email.toLowerCase()), var7: mysql_real_escape_string(designation), var8: bio ? mysql_real_escape_string(bio) : null, var9: databaseLinkQR, var10: "user", var11: mysql_real_escape_string(cover_pic), var12: mysql_real_escape_string(profile_picture), var13: card_link, var14: null, var15: company_ref, var16: contact_number,
                     });
                     let insertData = await connection.query(s2);
                     if (insertData.rowCount > 0) {
@@ -799,7 +796,7 @@ module.exports.editCard = async (req, res) => {
             let findCard = await connection.query(s2);
             if (findCard.rowCount > 0) {
                 let s3 = dbScript(db_sql["Q26"], {
-                    var1: mysql_real_escape_string(first_name), var2: mysql_real_escape_string(last_name), var3: mysql_real_escape_string(user_email.toLowerCase()), var4: mysql_real_escape_string(designation), var5: profile_picture, var6: bio ? JSON.stringify(bio) : null, var7: cover_pic, var8: contact_number, var9: card_id
+                    var1: mysql_real_escape_string(first_name), var2: mysql_real_escape_string(last_name), var3: mysql_real_escape_string(user_email.toLowerCase()), var4: mysql_real_escape_string(designation), var5: profile_picture, var6: bio ? mysql_real_escape_string(bio) : null, var7: cover_pic, var8: contact_number, var9: card_id
                 });
                 let editCardDetails = await connection.query(s3);
                 if (editCardDetails.rowCount > 0) {
