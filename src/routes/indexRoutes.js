@@ -8,5 +8,6 @@ router.use('/companyAdmin', require('./companyAdminRoutes'))
 
 
 router.get("/card", controller.companyAdminController.card);
+router.get("/vcf", controller.companyAdminController.vcf);
 
 module.exports = router;
