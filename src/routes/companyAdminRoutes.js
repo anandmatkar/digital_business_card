@@ -34,6 +34,7 @@ router.post("/uploadCardCoverPicture", verifyTokenForCA, uploadCardCoverePic.sin
 router.post("/uploadCompanyLogo", verifyTokenForCA, uploadCompanyLogo.single("image"), controller.companyAdminController.uploadCompanyLogo);
 router.put("/editCompanyDetails", verifyTokenForCA, controller.companyAdminController.editCompanyDetails);
 router.get("/companyDetails", verifyTokenForCA, controller.companyAdminController.companyDetails);
+router.get("/qrCodeList", verifyTokenForCA, controller.companyAdminController.qrCodeList);
 
 
 

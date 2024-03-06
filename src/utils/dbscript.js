@@ -140,7 +140,8 @@ const db_sql = {
           AND dc.deleted_at IS NULL AND c.deleted_at IS NULL AND c.status = 'activated'`,
     Q32: `UPDATE super_admin SET avatar = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     Q33: `UPDATE digital_cards SET deleted_at = '{var1}' WHERE id = '{var2}' AND created_by = '{var3}' AND deleted_at IS NULL RETURNING *`,
-    Q34: `SELECT * FROM digital_cards WHERE user_email = '{var1}' AND deleted_at IS NULL AND is_deactivated = false`
+    Q34: `SELECT * FROM digital_cards WHERE user_email = '{var1}' AND deleted_at IS NULL AND is_deactivated = false`,
+    Q35: `SELECT id,first_name, last_name,qr_url,card_url FROM digital_cards WHERE created_by = '{var1}' AND deleted_at IS NULL AND is_deactivated = '{var2}'`
 };
 
 const db_sql_ca = {
@@ -149,6 +150,7 @@ const db_sql_ca = {
     Q3: `SELECT * FROM company_admin WHERE id = '{var1}' AND deleted_at IS NULL AND is_active = true`,
     Q4: `UPDATE company_admin SET password = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     Q5: `UPDATE company_admin SET first_name = '{var2}', last_name = '{var3}', email = '{var4}', phone_number = '{var5}', mobile_number = '{var6}', avatar = '{var7}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+
 };
 
 function dbScript(template, variables) {

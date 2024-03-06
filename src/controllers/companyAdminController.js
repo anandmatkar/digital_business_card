@@ -842,3 +842,24 @@ module.exports.deleteCard = async (req, res) => {
         return handleCatchErrors(res, error);
     }
 }
+
+module.exports.qrCodeList = async (req, res) => {
+    try {
+        let { id } = req.user;
+        let s1 = dbScript(db_sql["Q16"], { var1: id });
+        let findCompanyAdmin = await connection.query(s1);
+        if (findCompanyAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql["Q35"], { var1: id, var2: false });
+            let urlLists = await connection.query(s2);
+            if (urlLists.rowCount > 0) {
+                return handleResponse(res, 200, true, "QR code URL lists", urlLists.rows);
+            } else {
+                return handleResponse(res, 401, false, "QR code URL lists", []);
+            }
+        } else {
+            return handleResponse(res, 401, false, "Admin not found");
+        }
+    } catch (error) {
+        return handleCatchErrors(res, error);
+    }
+}
