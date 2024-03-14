@@ -146,6 +146,48 @@ const db_sql = {
   Q36: `SELECT * FROM super_admin WHERE email = '{var1}' AND deleted_at IS NULL`,
   Q37: `SELECT * FROM super_admin WHERE id = '{var1}' AND deleted_at IS NULL`,
   Q38: `UPDATE super_admin SET password = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+  Q39: `WITH updated_card AS (
+    UPDATE digital_cards
+    SET 
+      first_name = '{var1}',
+      last_name = '{var2}',
+      user_email = '{var3}',
+      designation = '{var4}',
+      profile_picture = '{var5}',
+      bio = '{var6}',
+      cover_pic = '{var7}',
+      contact_number = '{var8}'
+    WHERE
+      id = '{var9}' 
+      AND deleted_at IS NULL
+    RETURNING *
+  )
+  UPDATE user_media_link AS uml
+  SET 
+    facebook = '{var10}',
+    instagram = '{var11}',
+    whatsapp = '{var12}',
+    twitter = '{var13}',
+    telegram = '{var14}',
+    we_chat = '{var15}',
+    line = '{var16}',
+    youtube = '{var17}',
+    tiktok = '{var18}',
+    xiao_hong_shu = '{var19}',
+    linkedin = '{var20}',
+    weibo = '{var21}'
+  FROM updated_card
+  WHERE uml.digital_card_id = updated_card.id
+  RETURNING updated_card.id AS card_id,
+            updated_card.first_name,
+            updated_card.last_name,
+            updated_card.user_email,
+            updated_card.designation,
+            updated_card.profile_picture AS card_profile_picture,
+            updated_card.bio AS card_bio,
+            updated_card.cover_pic AS card_cover_pic,
+            updated_card.contact_number,
+            uml.*`,
 };
 
 const db_sql_ca = {
