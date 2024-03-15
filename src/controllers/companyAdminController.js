@@ -409,50 +409,6 @@ module.exports.uploadCompanyLogo = async (req, res) => {
     });
   }
 };
-// edit company details
-// module.exports.editCompanyDetails = async (req, res) => {
-//     try {
-//         let { id } = req.user;
-//         let { company_id, company_name, company_email, description, company_address, company_logo, company_website, location, latitude, longitude, company_contact_number, product_service } = req.body
-//         if (!company_id || !company_name || !company_email || !company_contact_number) {
-//             return handleResponse(res, 400, false, "Please provide all the Fields.")
-//         }
-
-//         let isValidCId = isValidUUID(company_id)
-//         if (!isValidCId) {
-//             return handleResponse(res, 400, false, "Invalid Company Id")
-//         }
-
-//         let errors = await companyAdminValidation.editCompanyValidation(req, res);
-//         if (!errors.isEmpty()) {
-//             const firstError = errors.array()[0].msg;
-//             return handleResponse(res, 400, false, firstError);
-//         }
-
-//         await connection.query("BEGIN");
-//         let s1 = dbScript(db_sql["Q16"], { var1: id });
-//         let findCompanyAdmin = await connection.query(s1);
-//         if (findCompanyAdmin.rowCount > 0) {
-//             if (findCompanyAdmin.rows[0].id !== company_id) {
-//                 return handleResponse(res, 400, false, "Provide Valid Company Id")
-//             }
-//             let s1 = dbScript(db_sql["Q27"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: description ? mysql_real_escape_string(description) : null, var4: mysql_real_escape_string(company_address), var5: company_logo, var6: company_website ? mysql_real_escape_string(company_website) : null, var7: location, var8: latitude ? latitude : null, var9: longitude ? longitude : null, var10: company_contact_number, var11: product_service ? mysql_real_escape_string(product_service) : null, var12: id, var13: company_id });
-//             let updateCompanyDetails = await connection.query(s1);
-//             if (updateCompanyDetails.rowCount > 0) {
-//                 await connection.query("COMMIT")
-//                 return handleResponse(res, 200, true, "Company Details Updated Successfully.", updateCompanyDetails.rows);
-//             } else {
-//                 await connection.query("ROLLBACK");
-//                 return handleSWRError(res);
-//             }
-//         } else {
-//             return handleResponse(res, 401, false, "Admin not found");
-//         }
-//     } catch (error) {
-//         await connection.query("ROLLBACK");
-//         return handleCatchErrors(res, error);
-//     }
-// }
 
 module.exports.editCompanyDetails = async (req, res) => {
   try {
@@ -500,16 +456,52 @@ module.exports.editCompanyDetails = async (req, res) => {
       if (findCompanyAdmin.rows[0].id !== company_id) {
         return handleResponse(res, 400, false, "Provide Valid Company Id");
       }
+      // async function handleImage(product_service) {
+      //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
+      //   let counter = 1;
+      //   product_service = product_service.replace(
+      //     imgRegex,
+      //     (match, imageData) => {
+      //       const base64Data = imageData.replace(
+      //         /^data:image\/jpeg;base64,/,
+      //         ""
+      //       );
+      //       const filename = Date.now() + "-" + counter++ + ".jpg";
+      //       fs.writeFileSync(
+      //         path.join(
+      //           __dirname,
+      //           "..",
+      //           "..",
+      //           "uploads",
+      //           "productServiceImage",
+      //           filename
+      //         ),
+      //         base64Data,
+      //         "base64"
+      //       );
+      //       console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
+      //       return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+      //     }
+      //   );
+      //   return product_service;
+      // }
       async function handleImage(product_service) {
         const imgRegex = /<img[^>]+src="([^">]+)"/g;
         let counter = 1;
-        product_service = product_service.replace(
-          imgRegex,
-          (match, imageData) => {
-            const base64Data = imageData.replace(
-              /^data:image\/jpeg;base64,/,
-              ""
-            );
+        const existingImagePaths = new Set(); // To store existing image paths
+
+        // Check for existing image paths
+        product_service.replace(imgRegex, (match, imageData) => {
+          existingImagePaths.add(imageData);
+          return match;
+        });
+
+        product_service = product_service.replace(imgRegex, (match, imageData) => {
+          if (existingImagePaths.has(imageData)) {
+            // If image path already exists, keep the existing path
+            return match;
+          } else {
+            const base64Data = imageData.replace(/^data:image\/jpeg;base64,/, "");
             const filename = Date.now() + "-" + counter++ + ".jpg";
             fs.writeFileSync(
               path.join(
@@ -523,15 +515,15 @@ module.exports.editCompanyDetails = async (req, res) => {
               base64Data,
               "base64"
             );
+            console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
             return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
           }
-        );
+        });
         return product_service;
       }
-      // Call the function to handle image data
+
       product_service = await handleImage(product_service);
       product_service = JSON.stringify(product_service)
-      // Update company details in the database
       let s2 = dbScript(db_sql["Q27"], {
         var1: mysql_real_escape_string(company_name),
         var2: mysql_real_escape_string(company_email.toLowerCase()),
@@ -545,9 +537,7 @@ module.exports.editCompanyDetails = async (req, res) => {
         var8: latitude ? latitude : null,
         var9: longitude ? longitude : null,
         var10: company_contact_number,
-        var11: product_service
-          ? product_service
-          : null,
+        var11: product_service ? (product_service) : null,
         var12: id,
         var13: company_id,
       });
@@ -562,72 +552,14 @@ module.exports.editCompanyDetails = async (req, res) => {
         updateCompanyDetails.rows
       );
     } else {
-      // Company admin not found
       return handleResponse(res, 401, false, "Admin not found");
     }
   } catch (error) {
-    // Rollback transaction on error
     await connection.query("ROLLBACK");
     console.error(error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.stack });
   }
 };
-
-// module.exports.companyDetails = async (req, res) => {
-//   try {
-//     let { id } = req.user;
-//     let s1 = dbScript(db_sql["Q16"], { var1: id });
-//     let findCompanyAdmin = await connection.query(s1);
-//     if (findCompanyAdmin.rowCount > 0) {
-//       return handleResponse(
-//         res,
-//         200,
-//         true,
-//         "Company Details",
-//         findCompanyAdmin.rows
-//       );
-//     } else {
-//       return handleResponse(res, 401, false, "Admin not found");
-//     }
-//   } catch (error) {
-//     return handleCatchErrors(res, error);
-//   }
-// };
-
-// module.exports.companyDetails = async (req, res) => {
-//   try {
-//     let { id } = req.user;
-//     let s1 = dbScript(db_sql["Q16"], { var1: id });
-//     let findCompanyAdmin = await connection.query(s1);
-//     if (findCompanyAdmin.rowCount > 0) {
-//       if (findCompanyAdmin.rows[0].product_service) {
-//         let replacedTag = findCompanyAdmin.rows[0].product_service.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\n/g, "").replace(/,+/g, ',').replace(/(,\s*)+/g, ', ');
-//         findCompanyAdmin.rows[0].product_service = replacedTag
-//         console.log(findCompanyAdmin.rows[0].product_service, 'fdgdgdfdgfgg');
-
-//         findCompanyAdmin.rows[0].product_service = findCompanyAdmin.rows[0].product_service.replace(/<img\s+(?:[^>]*?\s+)?\/?>/g, match => {
-//           const srcMatch = match.match(/src="([^"]*)"/);
-//           if (srcMatch && srcMatch[1].trim() !== '') {
-//             return match;
-//           }
-//           return '';
-//         });
-//       }
-
-//       return handleResponse(
-//         res,
-//         200,
-//         true,
-//         "Company Details",
-//         findCompanyAdmin.rows
-//       );
-//     } else {
-//       return handleResponse(res, 401, false, "Admin not found");
-//     }
-//   } catch (error) {
-//     return handleCatchErrors(res, error);
-//   }
-// };
 
 module.exports.companyDetails = async (req, res) => {
   try {
@@ -636,13 +568,13 @@ module.exports.companyDetails = async (req, res) => {
     let findCompanyAdmin = await connection.query(s1);
     if (findCompanyAdmin.rowCount > 0) {
       findCompanyAdmin.rows[0].product_service = JSON.parse(findCompanyAdmin.rows[0].product_service);
-      console.log(findCompanyAdmin.rows[0].product_service);
+      console.log(findCompanyAdmin.rows[0].product_service, "imageeeeeee product ");
       return handleResponse(
         res,
         200,
         true,
         "Company Details",
-        findCompanyAdmin.rows // Send back the updated copy of the object
+        findCompanyAdmin.rows
       );
     } else {
       return handleResponse(res, 401, false, "Admin not found");
