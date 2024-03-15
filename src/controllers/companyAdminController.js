@@ -456,6 +456,7 @@ module.exports.editCompanyDetails = async (req, res) => {
       if (findCompanyAdmin.rows[0].id !== company_id) {
         return handleResponse(res, 400, false, "Provide Valid Company Id");
       }
+
       // async function handleImage(product_service) {
       //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
       //   let counter = 1;
@@ -485,43 +486,36 @@ module.exports.editCompanyDetails = async (req, res) => {
       //   );
       //   return product_service;
       // }
+
       async function handleImage(product_service) {
         const imgRegex = /<img[^>]+src="([^">]+)"/g;
         let counter = 1;
-        const existingImagePaths = new Set(); // To store existing image paths
 
-        // Check for existing image paths
-        product_service.replace(imgRegex, (match, imageData) => {
-          existingImagePaths.add(imageData);
-          return match;
-        });
+        product_service = product_service.replace(
+          imgRegex,
+          (match, imageData) => {
+            if (imageData.startsWith(process.env.PRODUCT_SERVICE_IMAGE_PATH)) {
+              // Image path is already in correct format, no need to replace
+              return match;
+            } else {
+              // Extract image data
+              const [, format, data] = imageData.match(/^data:image\/(\w+);base64,(.+)$/);
 
-        product_service = product_service.replace(imgRegex, (match, imageData) => {
-          if (existingImagePaths.has(imageData)) {
-            // If image path already exists, keep the existing path
-            return match;
-          } else {
-            const base64Data = imageData.replace(/^data:image\/jpeg;base64,/, "");
-            const filename = Date.now() + "-" + counter++ + ".jpg";
-            fs.writeFileSync(
-              path.join(
-                __dirname,
-                "..",
-                "..",
-                "uploads",
-                "productServiceImage",
-                filename
-              ),
-              base64Data,
-              "base64"
-            );
-            console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
-            return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+              // Generate filename
+              const filename = Date.now() + "-" + counter++ + "." + format;
+
+              // Decode and save image
+              const imagePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
+              fs.writeFileSync(imagePath, data, 'base64');
+
+              console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
+              return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+            }
           }
-        });
+        );
+
         return product_service;
       }
-
       product_service = await handleImage(product_service);
       product_service = JSON.stringify(product_service)
       let s2 = dbScript(db_sql["Q27"], {
@@ -537,7 +531,7 @@ module.exports.editCompanyDetails = async (req, res) => {
         var8: latitude ? latitude : null,
         var9: longitude ? longitude : null,
         var10: company_contact_number,
-        var11: product_service ? (product_service) : null,
+        var11: (product_service),
         var12: id,
         var13: company_id,
       });
@@ -568,7 +562,6 @@ module.exports.companyDetails = async (req, res) => {
     let findCompanyAdmin = await connection.query(s1);
     if (findCompanyAdmin.rowCount > 0) {
       findCompanyAdmin.rows[0].product_service = JSON.parse(findCompanyAdmin.rows[0].product_service);
-      console.log(findCompanyAdmin.rows[0].product_service, "imageeeeeee product ");
       return handleResponse(
         res,
         200,
@@ -583,9 +576,6 @@ module.exports.companyDetails = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 };
-
-
-
 
 /** ========card section===== */
 
@@ -1034,7 +1024,6 @@ module.exports.editCard = async (req, res) => {
       xiao_hong_shu,
       tiktok,
     } = req.body;
-    console.log(req.body);
 
     await connection.query("BEGIN");
     let s1 = dbScript(db_sql["Q16"], { var1: id });
@@ -1075,7 +1064,6 @@ module.exports.editCard = async (req, res) => {
           var20: linkedin !== "" && linkedin !== null ? linkedin : null,
           var21: weibo !== "" && weibo !== null ? weibo : null,
         });
-        console.log(s3, "script 3 edit card");
         let editCardDetails = await connection.query(s3);
         if (editCardDetails.rowCount > 0) {
           await connection.query("COMMIT");
