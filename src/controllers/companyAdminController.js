@@ -472,7 +472,6 @@ module.exports.editCompanyDetails = async (req, res) => {
       product_service,
     } = req.body;
 
-    // Validate required fields
     if (
       !company_id ||
       !company_name ||
@@ -482,23 +481,19 @@ module.exports.editCompanyDetails = async (req, res) => {
       return handleResponse(res, 400, false, "Please provide all the fields.");
     }
 
-    // Validate company ID format
     let isValidCId = isValidUUID(company_id);
     if (!isValidCId) {
       return handleResponse(res, 400, false, "Invalid Company Id");
     }
 
-    // Validate company admin
     let errors = await companyAdminValidation.editCompanyValidation(req, res);
     if (!errors.isEmpty()) {
       const firstError = errors.array()[0].msg;
       return handleResponse(res, 400, false, firstError);
     }
 
-    // Begin database transaction
     await connection.query("BEGIN");
 
-    // Check if company admin exists
     let s1 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
     if (findCompanyAdmin.rowCount > 0) {
@@ -506,22 +501,16 @@ module.exports.editCompanyDetails = async (req, res) => {
         return handleResponse(res, 400, false, "Provide Valid Company Id");
       }
       async function handleImage(product_service) {
-        // Regex to match img tags in the HTML content
         const imgRegex = /<img[^>]+src="([^">]+)"/g;
-        // Use a counter to ensure unique filenames for each image
         let counter = 1;
-        // Replace all occurrences of image paths in the HTML content
         product_service = product_service.replace(
           imgRegex,
           (match, imageData) => {
-            // Extract base64 image data
             const base64Data = imageData.replace(
               /^data:image\/jpeg;base64,/,
               ""
             );
-            // Generate a unique filename for the image
             const filename = Date.now() + "-" + counter++ + ".jpg";
-            // Write the image data to a file
             fs.writeFileSync(
               path.join(
                 __dirname,
@@ -534,7 +523,6 @@ module.exports.editCompanyDetails = async (req, res) => {
               base64Data,
               "base64"
             );
-            // Return the replaced image tag with the path to the saved image file
             return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
           }
         );
@@ -542,7 +530,7 @@ module.exports.editCompanyDetails = async (req, res) => {
       }
       // Call the function to handle image data
       product_service = await handleImage(product_service);
-
+      product_service = JSON.stringify(product_service)
       // Update company details in the database
       let s2 = dbScript(db_sql["Q27"], {
         var1: mysql_real_escape_string(company_name),
@@ -558,14 +546,12 @@ module.exports.editCompanyDetails = async (req, res) => {
         var9: longitude ? longitude : null,
         var10: company_contact_number,
         var11: product_service
-          ? mysql_real_escape_string(product_service)
+          ? product_service
           : null,
         var12: id,
         var13: company_id,
       });
       let updateCompanyDetails = await connection.query(s2);
-
-      // Commit transaction if successful
       await connection.query("COMMIT");
 
       return handleResponse(
@@ -587,18 +573,76 @@ module.exports.editCompanyDetails = async (req, res) => {
   }
 };
 
+// module.exports.companyDetails = async (req, res) => {
+//   try {
+//     let { id } = req.user;
+//     let s1 = dbScript(db_sql["Q16"], { var1: id });
+//     let findCompanyAdmin = await connection.query(s1);
+//     if (findCompanyAdmin.rowCount > 0) {
+//       return handleResponse(
+//         res,
+//         200,
+//         true,
+//         "Company Details",
+//         findCompanyAdmin.rows
+//       );
+//     } else {
+//       return handleResponse(res, 401, false, "Admin not found");
+//     }
+//   } catch (error) {
+//     return handleCatchErrors(res, error);
+//   }
+// };
+
+// module.exports.companyDetails = async (req, res) => {
+//   try {
+//     let { id } = req.user;
+//     let s1 = dbScript(db_sql["Q16"], { var1: id });
+//     let findCompanyAdmin = await connection.query(s1);
+//     if (findCompanyAdmin.rowCount > 0) {
+//       if (findCompanyAdmin.rows[0].product_service) {
+//         let replacedTag = findCompanyAdmin.rows[0].product_service.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\n/g, "").replace(/,+/g, ',').replace(/(,\s*)+/g, ', ');
+//         findCompanyAdmin.rows[0].product_service = replacedTag
+//         console.log(findCompanyAdmin.rows[0].product_service, 'fdgdgdfdgfgg');
+
+//         findCompanyAdmin.rows[0].product_service = findCompanyAdmin.rows[0].product_service.replace(/<img\s+(?:[^>]*?\s+)?\/?>/g, match => {
+//           const srcMatch = match.match(/src="([^"]*)"/);
+//           if (srcMatch && srcMatch[1].trim() !== '') {
+//             return match;
+//           }
+//           return '';
+//         });
+//       }
+
+//       return handleResponse(
+//         res,
+//         200,
+//         true,
+//         "Company Details",
+//         findCompanyAdmin.rows
+//       );
+//     } else {
+//       return handleResponse(res, 401, false, "Admin not found");
+//     }
+//   } catch (error) {
+//     return handleCatchErrors(res, error);
+//   }
+// };
+
 module.exports.companyDetails = async (req, res) => {
   try {
     let { id } = req.user;
     let s1 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
     if (findCompanyAdmin.rowCount > 0) {
+      findCompanyAdmin.rows[0].product_service = JSON.parse(findCompanyAdmin.rows[0].product_service);
+      console.log(findCompanyAdmin.rows[0].product_service);
       return handleResponse(
         res,
         200,
         true,
         "Company Details",
-        findCompanyAdmin.rows
+        findCompanyAdmin.rows // Send back the updated copy of the object
       );
     } else {
       return handleResponse(res, 401, false, "Admin not found");
@@ -607,6 +651,9 @@ module.exports.companyDetails = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 };
+
+
+
 
 /** ========card section===== */
 
@@ -1000,6 +1047,9 @@ module.exports.card = async (req, res) => {
     });
     let findCardDetails = await connection.query(s1);
     if (findCardDetails.rowCount > 0) {
+      if (findCardDetails.rows[0].product_service) {
+        findCardDetails.rows[0].product_service = JSON.parse(findCardDetails.rows[0].product_service)
+      }
       if (findCardDetails.rows[0].is_active_for_qr) {
         return handleResponse(
           res,
