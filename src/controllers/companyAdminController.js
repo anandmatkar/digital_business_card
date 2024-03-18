@@ -535,8 +535,8 @@ module.exports.editCompanyDetails = async (req, res) => {
               const filename = Date.now() + "-" + counter++ + "." + format;
 
               // Decode and save image
-              const imagePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
-              fs.writeFileSync(imagePath, data, 'base64');
+              const filePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
+              fs.writeFileSync(filePath, data, 'base64');
 
               console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
               return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
