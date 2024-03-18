@@ -30,7 +30,6 @@ router.put(
 );
 router.post(
   "/uploadSAProfile",
-  verifyTokenForSA,
   uploadSAAvatar.single("image"),
   controller.superAdminController.uploadSAProfile
 );
