@@ -341,7 +341,7 @@ module.exports.resetPassword = async (req, res) => {
 module.exports.editSAProfile = async (req, res) => {
   try {
     let { id } = req.user;
-    let { name, email } = req.body;
+    let { name, email, avatar } = req.body;
     name = name.toString().trim();
     console.log(name);
     if (!name || !email) {
@@ -360,7 +360,8 @@ module.exports.editSAProfile = async (req, res) => {
       let s2 = dbScript(db_sql["Q30"], {
         var1: mysql_real_escape_string(name),
         var2: mysql_real_escape_string(email.toLowerCase()),
-        var3: id,
+        var3: avatar ? mysql_real_escape_string(avatar) : null,
+        var4: id,
       });
       let updateProfile = await connection.query(s2);
       if (updateProfile.rowCount > 0) {
