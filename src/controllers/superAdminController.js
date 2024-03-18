@@ -387,40 +387,31 @@ module.exports.editSAProfile = async (req, res) => {
 
 module.exports.uploadSAProfile = async (req, res) => {
   try {
-    let { id } = req.user;
-    let file = req.file;
-    await connection.query("BEGIN");
-    let s1 = dbScript(db_sql["Q3"], { var1: id });
-    let findSuperAdmin = await connection.query(s1);
-    if (findSuperAdmin.rowCount > 0) {
-      const validExtensions = ["jpg", "jpeg", "png"];
-      const fileExtension = file.originalname.split(".").pop().toLowerCase();
-      if (!validExtensions.includes(fileExtension)) {
-        fs.unlinkSync(file.path);
-        return res.status(400).json({
-          success: false,
-          message: "Only JPG, JPEG, and PNG files are allowed.",
-        });
-      }
-      let path = `${process.env.SUP_ADMIN_AVATAR_LINK}/${file.filename}`;
-      let s2 = dbScript(db_sql["Q32"], { var1: path, var2: id });
-      let uploadAvatar = await connection.query(s2);
-      console.log(uploadAvatar.rows);
-      if (uploadAvatar.rowCount > 0) {
-        await connection.query("COMMIT");
-        return handleResponse(
-          res,
-          201,
-          true,
-          "Profile Pic uploaded successfully.",
-          path
-        );
-      } else {
-        await connection.query("ROLLBACK");
-        return handleSWRError(res);
-      }
+    const validExtensions = ["jpg", "jpeg", "png"];
+    const fileExtension = file.originalname.split(".").pop().toLowerCase();
+    if (!validExtensions.includes(fileExtension)) {
+      fs.unlinkSync(file.path);
+      return res.status(400).json({
+        success: false,
+        message: "Only JPG, JPEG, and PNG files are allowed.",
+      });
+    }
+    let path = `${process.env.SUP_ADMIN_AVATAR_LINK}/${file.filename}`;
+    let s2 = dbScript(db_sql["Q32"], { var1: path, var2: id });
+    let uploadAvatar = await connection.query(s2);
+    console.log(uploadAvatar.rows);
+    if (uploadAvatar.rowCount > 0) {
+      await connection.query("COMMIT");
+      return handleResponse(
+        res,
+        201,
+        true,
+        "Profile Pic uploaded successfully.",
+        path
+      );
     } else {
-      return handleResponse(res, 401, false, "Super Admin Not Found");
+      await connection.query("ROLLBACK");
+      return handleSWRError(res);
     }
   } catch (error) {
     await connection.query("ROLLBACK");
