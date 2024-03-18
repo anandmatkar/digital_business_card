@@ -700,6 +700,39 @@ module.exports.createCard = async (req, res) => {
           let created_by =
             findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
 
+          async function handleImage(bio) {
+            const imgRegex = /<img[^>]+src="([^">]+)"/g;
+            let counter = 1;
+
+            bio = bio.replace(
+              imgRegex,
+              (match, imagePath) => {
+                if (imagePath.startsWith("uploads/productServiceImage/")) {
+                  // Image path is already in correct format, no need to replace
+                  return match;
+                } else {
+                  // Extract image data
+                  const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
+
+                  // Generate filename
+                  const filename = Date.now() + "-" + counter++ + "." + format;
+
+                  // Decode and save image
+                  const filePath = path.join(__dirname, "..", "..", "uploads", "bioImages", filename);
+                  fs.writeFileSync(filePath, data, 'base64');
+
+                  console.log(`<img src="${process.env.BIO_IMAGE_PATH}/${filename}"`, "image path");
+                  return `<img src="${process.env.BIO_IMAGE_PATH}/${filename}"`;
+                }
+              }
+            );
+
+            return bio;
+          }
+          bio = await handleImage(bio);
+          bio = JSON.stringify(bio)
+          console.log(bio, "biooooooo");
+
           let s2 = dbScript(db_sql["Q17"], {
             var1: findCompanyAdmin.rows[0].id,
             var2: created_by,
@@ -708,7 +741,7 @@ module.exports.createCard = async (req, res) => {
             var5: mysql_real_escape_string(last_name),
             var6: mysql_real_escape_string(user_email.toLowerCase()),
             var7: mysql_real_escape_string(designation),
-            var8: bio ? mysql_real_escape_string(bio) : null,
+            var8: bio ? (bio) : null,
             var9: databaseLinkQR,
             var10: "user",
             var11: mysql_real_escape_string(cover_pic),
@@ -1001,6 +1034,9 @@ module.exports.card = async (req, res) => {
     if (findCardDetails.rowCount > 0) {
       if (findCardDetails.rows[0].product_service) {
         findCardDetails.rows[0].product_service = JSON.parse(findCardDetails.rows[0].product_service)
+      }
+      if (findCardDetails.rows[0].bio) {
+        findCardDetails.rows[0].bio = JSON.parse(findCardDetails.rows[0].bio)
       }
       if (findCardDetails.rows[0].is_active_for_qr) {
         return handleResponse(
