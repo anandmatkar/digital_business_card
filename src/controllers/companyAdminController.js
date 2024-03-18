@@ -875,7 +875,13 @@ module.exports.cardDetailsForCA = async (req, res) => {
     if (findCompanyAdmin.rowCount > 0) {
       let s1 = dbScript(db_sql["Q31"], { var1: card_id, var2: false });
       let findCardDetails = await connection.query(s1);
+      console.log(findCardDetails.rows[0].bio, "111111111111");
       if (findCardDetails.rowCount > 0) {
+        if (findCardDetails.rows[0].bio) {
+          findCardDetails.rows[0].bio = JSON.parse(findCardDetails.rows[0].bio)
+          console.log(findCardDetails.rows[0].bio, "2222222222");
+
+        }
         if (findCardDetails.rows[0].is_active_for_qr) {
           return handleResponse(
             res,
