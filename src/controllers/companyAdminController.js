@@ -487,19 +487,49 @@ module.exports.editCompanyDetails = async (req, res) => {
       //   return product_service;
       // }
 
+      // async function handleImage(product_service) {
+      //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
+      //   let counter = 1;
+
+      //   product_service = product_service.replace(
+      //     imgRegex,
+      //     (match, imageData) => {
+      //       if (imageData.startsWith(process.env.PRODUCT_SERVICE_IMAGE_PATH)) {
+      //         // Image path is already in correct format, no need to replace
+      //         return match;
+      //       } else {
+      //         // Extract image data
+      //         const [, format, data] = imageData.match(/^data:image\/(\w+);base64,(.+)$/);
+
+      //         // Generate filename
+      //         const filename = Date.now() + "-" + counter++ + "." + format;
+
+      //         // Decode and save image
+      //         const imagePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
+      //         fs.writeFileSync(imagePath, data, 'base64');
+
+      //         console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
+      //         return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+      //       }
+      //     }
+      //   );
+
+      //   return product_service;
+      // }
+
       async function handleImage(product_service) {
         const imgRegex = /<img[^>]+src="([^">]+)"/g;
         let counter = 1;
 
         product_service = product_service.replace(
           imgRegex,
-          (match, imageData) => {
-            if (imageData.startsWith(process.env.PRODUCT_SERVICE_IMAGE_PATH)) {
+          (match, imagePath) => {
+            if (imagePath.startsWith("uploads/productServiceImage/")) {
               // Image path is already in correct format, no need to replace
               return match;
             } else {
               // Extract image data
-              const [, format, data] = imageData.match(/^data:image\/(\w+);base64,(.+)$/);
+              const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
 
               // Generate filename
               const filename = Date.now() + "-" + counter++ + "." + format;
