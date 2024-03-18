@@ -1117,7 +1117,7 @@ module.exports.editCard = async (req, res) => {
           bio = bio.replace(
             imgRegex,
             (match, imagePath) => {
-              if (imagePath.startsWith("http://91.108.105.167/uploads/bioImages")) {
+              if (imagePath.startsWith("http://91.108.105.167/uploads/bioImages") || imagePath.startsWith("../../uploads/bioImages/")) {
                 // Image path is already in correct format, no need to replace
                 return match;
               } else {
