@@ -387,6 +387,7 @@ module.exports.editSAProfile = async (req, res) => {
 
 module.exports.uploadSAProfile = async (req, res) => {
   try {
+    let file = req.file;
     const validExtensions = ["jpg", "jpeg", "png"];
     const fileExtension = file.originalname.split(".").pop().toLowerCase();
     if (!validExtensions.includes(fileExtension)) {
@@ -397,22 +398,13 @@ module.exports.uploadSAProfile = async (req, res) => {
       });
     }
     let path = `${process.env.SUP_ADMIN_AVATAR_LINK}/${file.filename}`;
-    let s2 = dbScript(db_sql["Q32"], { var1: path, var2: id });
-    let uploadAvatar = await connection.query(s2);
-    console.log(uploadAvatar.rows);
-    if (uploadAvatar.rowCount > 0) {
-      await connection.query("COMMIT");
-      return handleResponse(
-        res,
-        201,
-        true,
-        "Profile Pic uploaded successfully.",
-        path
-      );
-    } else {
-      await connection.query("ROLLBACK");
-      return handleSWRError(res);
-    }
+    return handleResponse(
+      res,
+      201,
+      true,
+      "Profile Pic uploaded successfully.",
+      path
+    );
   } catch (error) {
     await connection.query("ROLLBACK");
     return handleCatchErrors(res, error);
