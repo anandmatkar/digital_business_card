@@ -707,7 +707,7 @@ module.exports.createCard = async (req, res) => {
             bio = bio.replace(
               imgRegex,
               (match, imagePath) => {
-                if (imagePath.startsWith("uploads/productServiceImage/")) {
+                if (imagePath.startsWith("http://91.108.105.167/uploads/bioImages")) {
                   // Image path is already in correct format, no need to replace
                   return match;
                 } else {
@@ -1110,13 +1110,44 @@ module.exports.editCard = async (req, res) => {
       let s2 = dbScript(db_sql["Q25"], { var1: card_id });
       let findCard = await connection.query(s2);
       if (findCard.rowCount > 0) {
+        async function handleImage(bio) {
+          const imgRegex = /<img[^>]+src="([^">]+)"/g;
+          let counter = 1;
+
+          bio = bio.replace(
+            imgRegex,
+            (match, imagePath) => {
+              if (imagePath.startsWith("http://91.108.105.167/uploads/bioImages")) {
+                // Image path is already in correct format, no need to replace
+                return match;
+              } else {
+                // Extract image data
+                const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
+
+                // Generate filename
+                const filename = Date.now() + "-" + counter++ + "." + format;
+
+                // Decode and save image
+                const filePath = path.join(__dirname, "..", "..", "uploads", "bioImages", filename);
+                fs.writeFileSync(filePath, data, 'base64');
+
+                console.log(`<img src="${process.env.BIO_IMAGE_PATH}/${filename}"`, "image path");
+                return `<img src="${process.env.BIO_IMAGE_PATH}/${filename}"`;
+              }
+            }
+          );
+
+          return bio;
+        }
+        bio = await handleImage(bio);
+        bio = JSON.stringify(bio)
         let s3 = dbScript(db_sql["Q39"], {
           var1: mysql_real_escape_string(first_name),
           var2: mysql_real_escape_string(last_name),
           var3: mysql_real_escape_string(user_email.toLowerCase()),
           var4: mysql_real_escape_string(designation),
           var5: profile_picture,
-          var6: bio ? mysql_real_escape_string(bio) : null,
+          var6: bio ? (bio) : null,
           var7: cover_pic,
           var8: contact_number,
           var9: card_id,
