@@ -844,7 +844,6 @@ module.exports.createCard = async (req, res) => {
           async function handleImage(bio) {
             const imgRegex = /<img[^>]+src="([^">]+)"/g;
             let counter = 1;
-
             bio = bio.replace(
               imgRegex,
               (match, imagePath) => {
@@ -864,9 +863,10 @@ module.exports.createCard = async (req, res) => {
             );
             return bio;
           }
-          bio = await handleImage(bio);
-          bio = JSON.stringify(bio)
-
+          if (bio !== undefined || bio !== null || bio !== "") {
+            bio = await handleImage(bio);
+            bio = JSON.stringify(bio)
+          }
           let s2 = `
           INSERT INTO digital_cards 
             (company_id, created_by, card_reference, first_name, last_name, user_email, designation, bio, qr_url, user_type, cover_pic, profile_picture, card_url, vcf_card_url, company_ref, contact_number) 
