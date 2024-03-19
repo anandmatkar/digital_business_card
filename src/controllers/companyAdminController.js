@@ -1208,17 +1208,50 @@ module.exports.editCard = async (req, res) => {
       let s2 = dbScript(db_sql["Q25"], { var1: card_id });
       let findCard = await connection.query(s2);
       if (findCard.rowCount > 0) {
+        // async function handleImage(bio) {
+        //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
+        //   let counter = 1;
+        //   bio = bio.replace(
+        //     imgRegex,
+        //     (match, imagePath) => {
+        //       if (imagePath.startsWith("https://midin.app/uploads/bioImages") || imagePath.startsWith("uploads/bioImages/") || imagePath.startsWith("../../uploads/bioImages")) {
+        //         // Image path is already in correct format, no need to replace
+        //         return match;
+        //       } else {
+        //         // Extract image data
+        //         const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
+
+        //         // Generate filename
+        //         const filename = Date.now() + "-" + counter++ + "." + format;
+
+        //         // Decode and save image
+        //         const filePath = path.join(__dirname, "..", "..", "uploads", "bioImages", filename);
+        //         fs.writeFileSync(filePath, data, 'base64');
+
+        //         return `<img src="${process.env.BIO_IMAGE_PATH}/${filename}"`;
+        //       }
+        //     }
+        //   );
+        //   return bio;
+        // }
+
         async function handleImage(bio) {
           const imgRegex = /<img[^>]+src="([^">]+)"/g;
           let counter = 1;
-          bio = unescape(bio);
           bio = bio.replace(
             imgRegex,
             (match, imagePath) => {
-              if (imagePath.startsWith("https://midin.app/uploads/bioImages") || imagePath.startsWith("uploads/bioImages/") || imagePath.startsWith("../../uploads/bioImages")) {
+              if (imagePath.startsWith("https://midin.app/uploads/bioImages")) {
                 // Image path is already in correct format, no need to replace
                 return match;
-              } else {
+              } else if (imagePath.startsWith("uploads/bioImages/")) {
+                // Add https://midin.app before uploads/bioImages
+                return `<img src="https://midin.app/${imagePath}"`;
+              } else if (imagePath.startsWith("../../uploads")) {
+                // Remove ../../ and then add https://midin.app before uploads
+                const correctedPath = imagePath.replace("../../uploads", "https://midin.app");
+                return `<img src="${correctedPath}"`;
+              } else if (imagePath.startsWith("data:image")) {
                 // Extract image data
                 const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
 
@@ -1230,6 +1263,9 @@ module.exports.editCard = async (req, res) => {
                 fs.writeFileSync(filePath, data, 'base64');
 
                 return `<img src="${process.env.BIO_IMAGE_PATH}/${filename}"`;
+              } else {
+                // For any other case, return the original match
+                return match;
               }
             }
           );
