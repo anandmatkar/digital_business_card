@@ -1249,7 +1249,7 @@ module.exports.editCard = async (req, res) => {
                 return `<img src="https://midin.app/${imagePath}"`;
               } else if (imagePath.startsWith("../../uploads")) {
                 // Remove ../../ and then add https://midin.app before uploads
-                const correctedPath = imagePath.replace("../../uploads", "https://midin.app");
+                const correctedPath = imagePath.replace("../../", "https://midin.app");
                 return `<img src="${correctedPath}"`;
               } else if (imagePath.startsWith("data:image")) {
                 // Extract image data
