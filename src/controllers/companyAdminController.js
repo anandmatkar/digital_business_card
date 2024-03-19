@@ -622,14 +622,6 @@ module.exports.uploadCompanyLogo = async (req, res) => {
 // };
 
 
-
-
-
-
-
-
-
-
 module.exports.editCompanyDetails = async (req, res) => {
   try {
     let { id } = req.user;
@@ -1150,18 +1142,7 @@ module.exports.editCard = async (req, res) => {
       cover_pic,
       profile_picture,
       contact_number,
-      facebook,
-      instagram,
-      linkedin,
-      whatsapp,
-      twitter,
-      telegram,
-      youtube,
-      weibo,
-      line,
-      wechat,
-      xiao_hong_shu,
-      tiktok,
+
     } = req.body;
 
     await connection.query("BEGIN");
@@ -1184,7 +1165,7 @@ module.exports.editCard = async (req, res) => {
           bio = bio.replace(
             imgRegex,
             (match, imagePath) => {
-              if (imagePath.startsWith("https://midin.app/uploads/bioImages")) {
+              if (imagePath.startsWith("https://midin.app/uploads/bioImages") || imagePath.startsWith("uploads/bioImages/")) {
                 // Image path is already in correct format, no need to replace
                 return match;
               } else {
