@@ -29,6 +29,7 @@ const { json } = require("express");
 const multer = require("multer");
 
 const cheerio = require("cheerio"); // For parsing HTML content
+const { unescape, escape } = require("querystring");
 
 /* Auth Section */
 
@@ -410,6 +411,225 @@ module.exports.uploadCompanyLogo = async (req, res) => {
   }
 };
 
+// module.exports.editCompanyDetails = async (req, res) => {
+//   try {
+//     let { id } = req.user;
+//     let {
+//       company_id,
+//       company_name,
+//       company_email,
+//       description,
+//       company_address,
+//       company_logo,
+//       company_website,
+//       location,
+//       latitude,
+//       longitude,
+//       company_contact_number,
+//       product_service,
+//     } = req.body;
+
+//     if (
+//       !company_id ||
+//       !company_name ||
+//       !company_email ||
+//       !company_contact_number
+//     ) {
+//       return handleResponse(res, 400, false, "Please provide all the fields.");
+//     }
+
+//     let isValidCId = isValidUUID(company_id);
+//     if (!isValidCId) {
+//       return handleResponse(res, 400, false, "Invalid Company Id");
+//     }
+
+//     let errors = await companyAdminValidation.editCompanyValidation(req, res);
+//     if (!errors.isEmpty()) {
+//       const firstError = errors.array()[0].msg;
+//       return handleResponse(res, 400, false, firstError);
+//     }
+
+//     await connection.query("BEGIN");
+
+//     let s1 = dbScript(db_sql["Q16"], { var1: id });
+//     let findCompanyAdmin = await connection.query(s1);
+//     if (findCompanyAdmin.rowCount > 0) {
+//       if (findCompanyAdmin.rows[0].id !== company_id) {
+//         return handleResponse(res, 400, false, "Provide Valid Company Id");
+//       }
+
+//       // async function handleImage(product_service) {
+//       //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
+//       //   let counter = 1;
+//       //   product_service = product_service.replace(
+//       //     imgRegex,
+//       //     (match, imageData) => {
+//       //       const base64Data = imageData.replace(
+//       //         /^data:image\/jpeg;base64,/,
+//       //         ""
+//       //       );
+//       //       const filename = Date.now() + "-" + counter++ + ".jpg";
+//       //       fs.writeFileSync(
+//       //         path.join(
+//       //           __dirname,
+//       //           "..",
+//       //           "..",
+//       //           "uploads",
+//       //           "productServiceImage",
+//       //           filename
+//       //         ),
+//       //         base64Data,
+//       //         "base64"
+//       //       );
+//       //       console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
+//       //       return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+//       //     }
+//       //   );
+//       //   return product_service;
+//       // }
+
+//       // async function handleImage(product_service) {
+//       //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
+//       //   let counter = 1;
+
+//       //   product_service = product_service.replace(
+//       //     imgRegex,
+//       //     (match, imageData) => {
+//       //       if (imageData.startsWith(process.env.PRODUCT_SERVICE_IMAGE_PATH)) {
+//       //         // Image path is already in correct format, no need to replace
+//       //         return match;
+//       //       } else {
+//       //         // Extract image data
+//       //         const [, format, data] = imageData.match(/^data:image\/(\w+);base64,(.+)$/);
+
+//       //         // Generate filename
+//       //         const filename = Date.now() + "-" + counter++ + "." + format;
+
+//       //         // Decode and save image
+//       //         const imagePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
+//       //         fs.writeFileSync(imagePath, data, 'base64');
+
+//       //         console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
+//       //         return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+//       //       }
+//       //     }
+//       //   );
+
+//       //   return product_service;
+//       // }
+
+//       // async function handleImage(product_service) {
+//       //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
+//       //   let counter = 1;
+
+//       //   product_service = product_service.replace(
+//       //     imgRegex,
+//       //     (match, imagePath) => {
+//       //       if (imagePath.startsWith("uploads/productServiceImage/")) {
+//       //         // Image path is already in correct format, no need to replace
+//       //         return match;
+//       //       } else {
+//       //         // Extract image data
+//       //         const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
+
+//       //         // Generate filename
+//       //         const filename = Date.now() + "-" + counter++ + "." + format;
+
+//       //         // Decode and save image
+//       //         const filePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
+//       //         fs.writeFileSync(filePath, data, 'base64');
+
+//       //         console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
+//       //         return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+//       //       }
+//       //     }
+//       //   );
+
+//       //   return product_service;
+//       // }
+
+//       async function handleImage(product_service) {
+//         const imgRegex = /<img[^>]+src="([^">]+)"/g;
+//         let counter = 1;
+
+//         product_service = product_service.replace(
+//           imgRegex,
+//           (match, imagePath) => {
+//             if (imagePath.startsWith("uploads/productServiceImage/") || imagePath.startsWith("https://midin.app/uploads/productServiceImage/") || imagePath.startsWith("http://localhost:3007/productServiceImage/")) {
+//               // Image path is already in correct format, no need to replace
+//               return match;
+//             } else {
+//               // Extract image data
+//               const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
+
+//               // Generate filename
+//               const filename = Date.now() + "-" + counter++ + "." + format;
+
+//               // Decode and save image
+//               const filePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
+//               fs.writeFileSync(filePath, data, 'base64');
+
+//               console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
+//               return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+//             }
+//           }
+//         );
+
+//         // Escape text content to prevent SQL injection
+//         product_service = mysql_real_escape_string(product_service);
+//         console.log(product_service, "encodedddddddd");
+
+//         return product_service;
+//       }
+
+//       product_service = await handleImage(product_service);
+//       product_service = JSON.stringify(product_service)
+//       let s2 = dbScript(db_sql["Q27"], {
+//         var1: mysql_real_escape_string(company_name),
+//         var2: mysql_real_escape_string(company_email.toLowerCase()),
+//         var3: description ? mysql_real_escape_string(description) : null,
+//         var4: mysql_real_escape_string(company_address),
+//         var5: company_logo,
+//         var6: company_website
+//           ? mysql_real_escape_string(company_website)
+//           : null,
+//         var7: location,
+//         var8: latitude ? latitude : null,
+//         var9: longitude ? longitude : null,
+//         var10: company_contact_number,
+//         var11: (product_service),
+//         var12: id,
+//         var13: company_id,
+//       });
+//       let updateCompanyDetails = await connection.query(s2);
+//       await connection.query("COMMIT");
+//       updateCompanyDetails.rows[0].product_service = unescape(updateCompanyDetails.rows[0].product_service)
+//       return handleResponse(
+//         res,
+//         200,
+//         true,
+//         "Company Details Updated Successfully.",
+//         updateCompanyDetails.rows
+//       );
+//     } else {
+//       return handleResponse(res, 401, false, "Admin not found");
+//     }
+//   } catch (error) {
+//     await connection.query("ROLLBACK");
+//     console.error(error);
+//     return res.status(500).json({ error: error.stack });
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
 module.exports.editCompanyDetails = async (req, res) => {
   try {
     let { id } = req.user;
@@ -457,66 +677,6 @@ module.exports.editCompanyDetails = async (req, res) => {
         return handleResponse(res, 400, false, "Provide Valid Company Id");
       }
 
-      // async function handleImage(product_service) {
-      //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
-      //   let counter = 1;
-      //   product_service = product_service.replace(
-      //     imgRegex,
-      //     (match, imageData) => {
-      //       const base64Data = imageData.replace(
-      //         /^data:image\/jpeg;base64,/,
-      //         ""
-      //       );
-      //       const filename = Date.now() + "-" + counter++ + ".jpg";
-      //       fs.writeFileSync(
-      //         path.join(
-      //           __dirname,
-      //           "..",
-      //           "..",
-      //           "uploads",
-      //           "productServiceImage",
-      //           filename
-      //         ),
-      //         base64Data,
-      //         "base64"
-      //       );
-      //       console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
-      //       return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
-      //     }
-      //   );
-      //   return product_service;
-      // }
-
-      // async function handleImage(product_service) {
-      //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
-      //   let counter = 1;
-
-      //   product_service = product_service.replace(
-      //     imgRegex,
-      //     (match, imageData) => {
-      //       if (imageData.startsWith(process.env.PRODUCT_SERVICE_IMAGE_PATH)) {
-      //         // Image path is already in correct format, no need to replace
-      //         return match;
-      //       } else {
-      //         // Extract image data
-      //         const [, format, data] = imageData.match(/^data:image\/(\w+);base64,(.+)$/);
-
-      //         // Generate filename
-      //         const filename = Date.now() + "-" + counter++ + "." + format;
-
-      //         // Decode and save image
-      //         const imagePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
-      //         fs.writeFileSync(imagePath, data, 'base64');
-
-      //         console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
-      //         return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
-      //       }
-      //     }
-      //   );
-
-      //   return product_service;
-      // }
-
       async function handleImage(product_service) {
         const imgRegex = /<img[^>]+src="([^">]+)"/g;
         let counter = 1;
@@ -524,21 +684,16 @@ module.exports.editCompanyDetails = async (req, res) => {
         product_service = product_service.replace(
           imgRegex,
           (match, imagePath) => {
-            if (imagePath.startsWith("uploads/productServiceImage/")) {
-              // Image path is already in correct format, no need to replace
+            if (imagePath.startsWith("uploads/productServiceImage/") || imagePath.startsWith("https://midin.app/uploads/productServiceImage/") || imagePath.startsWith("http://localhost:3007/productServiceImage/")) {
               return match;
             } else {
-              // Extract image data
               const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
 
-              // Generate filename
               const filename = Date.now() + "-" + counter++ + "." + format;
 
-              // Decode and save image
               const filePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
               fs.writeFileSync(filePath, data, 'base64');
 
-              console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
               return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
             }
           }
@@ -546,28 +701,47 @@ module.exports.editCompanyDetails = async (req, res) => {
 
         return product_service;
       }
-      product_service = await handleImage(product_service);
-      product_service = JSON.stringify(product_service)
-      let s2 = dbScript(db_sql["Q27"], {
-        var1: mysql_real_escape_string(company_name),
-        var2: mysql_real_escape_string(company_email.toLowerCase()),
-        var3: description ? mysql_real_escape_string(description) : null,
-        var4: mysql_real_escape_string(company_address),
-        var5: company_logo,
-        var6: company_website
-          ? mysql_real_escape_string(company_website)
-          : null,
-        var7: location,
-        var8: latitude ? latitude : null,
-        var9: longitude ? longitude : null,
-        var10: company_contact_number,
-        var11: (product_service),
-        var12: id,
-        var13: company_id,
-      });
-      let updateCompanyDetails = await connection.query(s2);
-      await connection.query("COMMIT");
 
+      product_service = await handleImage(product_service);
+      product_service = JSON.stringify(product_service);
+      let s2 = `
+  UPDATE company 
+  SET 
+    company_name = $1, 
+    company_email = $2,
+    description = $3,
+    company_address = $4,
+    company_logo = $5,
+    company_website = $6,
+    location = $7,
+    latitude = $8,
+    longitude = $9,
+    company_contact_number = $10,
+    product_service = $11
+  WHERE 
+    admin_id = $12 
+    AND id = $13 
+    AND deleted_at IS NULL 
+  RETURNING *`;
+
+      let updateCompanyDetails = await connection.query(s2, [
+        company_name,
+        company_email.toLowerCase(),
+        description,
+        company_address,
+        company_logo,
+        company_website,
+        location,
+        latitude,
+        longitude,
+        company_contact_number,
+        product_service,
+        id,
+        company_id
+      ]);
+
+      await connection.query("COMMIT");
+      updateCompanyDetails.rows[0].product_service = unescape(updateCompanyDetails.rows[0].product_service);
       return handleResponse(
         res,
         200,
@@ -585,20 +759,15 @@ module.exports.editCompanyDetails = async (req, res) => {
   }
 };
 
+
 module.exports.companyDetails = async (req, res) => {
   try {
     let { id } = req.user;
     let s1 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
     if (findCompanyAdmin.rowCount > 0) {
-      findCompanyAdmin.rows[0].product_service = JSON.parse(findCompanyAdmin.rows[0].product_service);
-      return handleResponse(
-        res,
-        200,
-        true,
-        "Company Details",
-        findCompanyAdmin.rows
-      );
+      findCompanyAdmin.rows[0].product_service = unescape(JSON.parse(findCompanyAdmin.rows[0].product_service));
+      return handleResponse(res, 200, true, "Company Details", findCompanyAdmin.rows);
     } else {
       return handleResponse(res, 401, false, "Admin not found");
     }
@@ -612,29 +781,7 @@ module.exports.companyDetails = async (req, res) => {
 module.exports.createCard = async (req, res) => {
   try {
     let { id } = req.user;
-    let {
-      first_name,
-      last_name,
-      user_email,
-      designation,
-      bio,
-      cover_pic,
-      profile_picture,
-      contact_number,
-      facebook,
-      instagram,
-      linkedin,
-      whatsapp,
-      youtube,
-      xiao_hong_shu,
-      tiktok,
-      wechat,
-      line,
-      telegram,
-      webio,
-      twitter,
-      extra_link_title,
-      extra_link_url,
+    let { first_name, last_name, user_email, designation, bio, cover_pic, profile_picture, contact_number,
     } = req.body;
     await connection.query("BEGIN");
 
@@ -671,8 +818,8 @@ module.exports.createCard = async (req, res) => {
           length: 5,
           charset: "alphanumeric",
         });
-        let qrCodeLink = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`; //link which will be seen after scanning qr code
-        let databaseLinkQR = `${process.env.DATABASE_LINK_FOR_QR}/${companyName}/${card_ref}.png`; //link of qr code saved in backend folder
+        let qrCodeLink = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`;
+        let databaseLinkQR = `${process.env.DATABASE_LINK_FOR_QR}/${companyName}/${card_ref}.png`;
         let qrCodeDirectory = path.join(
           __dirname,
           "../../",
@@ -691,14 +838,9 @@ module.exports.createCard = async (req, res) => {
           qrCodeFileName
         );
         if (qrSuccess) {
-          cover_pic = cover_pic
-            ? cover_pic
-            : process.env.DEFAULT_CARD_COVER_PIC;
-          profile_picture = profile_picture
-            ? profile_picture
-            : process.env.DEFAULT_USER_PROFILE_PIC;
-          let created_by =
-            findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
+          cover_pic = cover_pic ? cover_pic : process.env.DEFAULT_CARD_COVER_PIC;
+          profile_picture = profile_picture ? profile_picture : process.env.DEFAULT_USER_PROFILE_PIC;
+          let created_by = findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
 
           async function handleImage(bio) {
             const imgRegex = /<img[^>]+src="([^">]+)"/g;
@@ -708,119 +850,46 @@ module.exports.createCard = async (req, res) => {
               imgRegex,
               (match, imagePath) => {
                 if (imagePath.startsWith("https://midin.app/uploads/bioImages")) {
-                  // Image path is already in correct format, no need to replace
                   return match;
                 } else {
-                  // Extract image data
                   const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
 
-                  // Generate filename
                   const filename = Date.now() + "-" + counter++ + "." + format;
 
-                  // Decode and save image
                   const filePath = path.join(__dirname, "..", "..", "uploads", "bioImages", filename);
                   fs.writeFileSync(filePath, data, 'base64');
 
-                  console.log(`<img src="${process.env.BIO_IMAGE_PATH}/${filename}"`, "image path");
                   return `<img src="${process.env.BIO_IMAGE_PATH}/${filename}"`;
                 }
               }
             );
-
             return bio;
           }
           bio = await handleImage(bio);
           bio = JSON.stringify(bio)
-          console.log(bio, "biooooooo");
 
-          let s2 = dbScript(db_sql["Q17"], {
-            var1: findCompanyAdmin.rows[0].id,
-            var2: created_by,
-            var3: card_ref,
-            var4: mysql_real_escape_string(first_name),
-            var5: mysql_real_escape_string(last_name),
-            var6: mysql_real_escape_string(user_email.toLowerCase()),
-            var7: mysql_real_escape_string(designation),
-            var8: bio ? (bio) : null,
-            var9: databaseLinkQR,
-            var10: "user",
-            var11: mysql_real_escape_string(cover_pic),
-            var12: mysql_real_escape_string(profile_picture),
-            var13: card_link,
-            var14: null,
-            var15: company_ref,
-            var16: contact_number,
-          });
-          let insertData = await connection.query(s2);
+          let s2 = `
+          INSERT INTO digital_cards 
+            (company_id, created_by, card_reference, first_name, last_name, user_email, designation, bio, qr_url, user_type, cover_pic, profile_picture, card_url, vcf_card_url, company_ref, contact_number) 
+          VALUES 
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) 
+          RETURNING *`;
+
+          let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, first_name, last_name, user_email.toLowerCase(), designation, bio ? bio : null, databaseLinkQR, "user", cover_pic, profile_picture, card_link, null, company_ref, contact_number]);
+
           if (insertData.rowCount > 0) {
-            // if (
-            //   fb_link ||
-            //   insta_link ||
-            //   extra_link_title ||
-            //   linkedin_link ||
-            //   whatsapp ||
-            //   youtube ||
-            //   xiao_hong_shu ||
-            //   tiktok ||
-            //   wechat ||
-            //   line ||
-            //   telegram ||
-            //   webio ||
-            //   twitter
-            // ) {
-            facebook = facebook || null;
-            instagram = instagram || null;
-            linkedin = linkedin || null;
-            whatsapp = whatsapp || null;
-            youtube = youtube || null;
-            xiao_hong_shu = xiao_hong_shu || null;
-            tiktok = tiktok || null;
-            wechat = wechat || null;
-            line = line || null;
-            telegram = telegram || null;
-            webio = webio || null;
-            twitter = twitter || null;
-            extra_link_title = extra_link_title || null;
-            extra_link_url = extra_link_url || null;
-            let s3 = dbScript(db_sql["Q18"], {
-              var1: facebook ? mysql_real_escape_string(facebook) : null,
-              var2: instagram ? mysql_real_escape_string(instagram) : null,
-              var3: extra_link_title
-                ? mysql_real_escape_string(extra_link_title)
-                : null,
-              var4: extra_link_url
-                ? mysql_real_escape_string(extra_link_url)
-                : null,
-              var5: linkedin ? mysql_real_escape_string(linkedin) : null,
-              var6: twitter ? mysql_real_escape_string(twitter) : null,
-              var7: telegram ? mysql_real_escape_string(telegram) : null,
-              var8: whatsapp ? `https://wa.me/${whatsapp}` : null,
-              var9: youtube ? mysql_real_escape_string(youtube) : null,
-              var10: tiktok ? mysql_real_escape_string(tiktok) : null,
-              var11: line ? mysql_real_escape_string(line) : null,
-              var12: wechat ? wechat : null,
-              var13: xiao_hong_shu
-                ? mysql_real_escape_string(xiao_hong_shu)
-                : null,
-              var14: webio ? mysql_real_escape_string(webio) : null,
-              var15: insertData.rows[0].id,
-            });
-
-            let insertSocialMediaLinks = await connection.query(s3);
-            // }
             let s4 = dbScript(db_sql["Q20"], {
               var1: Number(usedCards) + 1,
               var2: findCompanyAdmin.rows[0].id,
             });
             let updateCardCount = await connection.query(s4);
-            await connection.query("COMMIT");
-            return handleResponse(
-              res,
-              201,
-              true,
-              "Card Created Successfully",
-              insertData.rows
-            );
+            if (updateCardCount.rowCount > 0) {
+              await connection.query("COMMIT");
+              return handleResponse(res, 201, true, "Card Created Successfully", insertData.rows);
+            } else {
+              await connection.query("ROLLBACK");
+              return handleSWRError(res);
+            }
           } else {
             await connection.query("ROLLBACK");
             return handleSWRError(res);
@@ -875,11 +944,9 @@ module.exports.cardDetailsForCA = async (req, res) => {
     if (findCompanyAdmin.rowCount > 0) {
       let s1 = dbScript(db_sql["Q31"], { var1: card_id, var2: false });
       let findCardDetails = await connection.query(s1);
-      console.log(findCardDetails.rows[0].bio, "111111111111");
       if (findCardDetails.rowCount > 0) {
         if (findCardDetails.rows[0].bio) {
-          findCardDetails.rows[0].bio = JSON.parse(findCardDetails.rows[0].bio)
-          console.log(findCardDetails.rows[0].bio, "2222222222");
+          findCardDetails.rows[0].bio = unescape(JSON.parse(findCardDetails.rows[0].bio))
 
         }
         if (findCardDetails.rows[0].is_active_for_qr) {
@@ -1039,10 +1106,10 @@ module.exports.card = async (req, res) => {
     let findCardDetails = await connection.query(s1);
     if (findCardDetails.rowCount > 0) {
       if (findCardDetails.rows[0].product_service) {
-        findCardDetails.rows[0].product_service = JSON.parse(findCardDetails.rows[0].product_service)
+        findCardDetails.rows[0].product_service = unescape(JSON.parse(findCardDetails.rows[0].product_service))
       }
       if (findCardDetails.rows[0].bio) {
-        findCardDetails.rows[0].bio = JSON.parse(findCardDetails.rows[0].bio)
+        findCardDetails.rows[0].bio = unescape(JSON.parse(findCardDetails.rows[0].bio))
       }
       if (findCardDetails.rows[0].is_active_for_qr) {
         return handleResponse(
@@ -1117,7 +1184,7 @@ module.exports.editCard = async (req, res) => {
           bio = bio.replace(
             imgRegex,
             (match, imagePath) => {
-              if (imagePath.startsWith("https://midin.app/uploads/bioImages") || imagePath.startsWith("../../uploads/bioImages/") || imagePath.startsWith("uploads/bioImages/")) {
+              if (imagePath.startsWith("https://midin.app/uploads/bioImages")) {
                 // Image path is already in correct format, no need to replace
                 return match;
               } else {
@@ -1131,44 +1198,46 @@ module.exports.editCard = async (req, res) => {
                 const filePath = path.join(__dirname, "..", "..", "uploads", "bioImages", filename);
                 fs.writeFileSync(filePath, data, 'base64');
 
-                console.log(`<img src="${process.env.BIO_IMAGE_PATH}/${filename}"`, "image path");
                 return `<img src="${process.env.BIO_IMAGE_PATH}/${filename}"`;
               }
             }
           );
-
+          bio = escape(bio);
           return bio;
         }
         bio = await handleImage(bio);
         bio = JSON.stringify(bio)
-        let s3 = dbScript(db_sql["Q39"], {
-          var1: mysql_real_escape_string(first_name),
-          var2: mysql_real_escape_string(last_name),
-          var3: mysql_real_escape_string(user_email.toLowerCase()),
-          var4: mysql_real_escape_string(designation),
-          var5: profile_picture,
-          var6: bio ? (bio) : null,
-          var7: cover_pic,
-          var8: contact_number,
-          var9: card_id,
-          var10: facebook !== "" && facebook !== null ? facebook : null,
-          var11: instagram !== "" && instagram !== null ? instagram : null,
-          var12: whatsapp !== "" && whatsapp !== null ? whatsapp : null,
-          var13: twitter !== "" && twitter !== null ? twitter : null,
-          var14: telegram !== "" && telegram !== null ? telegram : null,
-          var15: wechat !== "" && wechat !== null ? wechat : null,
-          var16: line !== "" && line !== null ? line : null,
-          var17: youtube !== "" && youtube !== null ? youtube : null,
-          var18: tiktok !== "" && tiktok !== null ? tiktok : null,
-          var19:
-            xiao_hong_shu !== "" && xiao_hong_shu !== null
-              ? xiao_hong_shu
-              : null,
-          var20: linkedin !== "" && linkedin !== null ? linkedin : null,
-          var21: weibo !== "" && weibo !== null ? weibo : null,
-        });
-        let editCardDetails = await connection.query(s3);
+
+        let s3 = `
+  UPDATE digital_cards
+  SET 
+    first_name = $1,
+    last_name = $2,
+    user_email = $3,
+    designation = $4,
+    profile_picture = $5,
+    bio = $6,
+    cover_pic = $7,
+    contact_number = $8
+  WHERE
+    id = $9
+    AND deleted_at IS NULL
+  RETURNING *`;
+
+        let editCardDetails = await connection.query(s3, [
+          mysql_real_escape_string(first_name),
+          mysql_real_escape_string(last_name),
+          mysql_real_escape_string(user_email.toLowerCase()),
+          mysql_real_escape_string(designation),
+          profile_picture,
+          bio ? (bio) : null,
+          cover_pic,
+          contact_number,
+          card_id
+        ]);
+
         if (editCardDetails.rowCount > 0) {
+          editCardDetails.rows[0].card_bio = unescape(editCardDetails.rows[0].card_bio)
           await connection.query("COMMIT");
           return handleResponse(
             res,
