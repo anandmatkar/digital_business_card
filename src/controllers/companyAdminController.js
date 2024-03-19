@@ -676,9 +676,14 @@ module.exports.editCompanyDetails = async (req, res) => {
         product_service = product_service.replace(
           imgRegex,
           (match, imagePath) => {
-            if (imagePath.startsWith("uploads/productServiceImage/") || imagePath.startsWith("https://midin.app/uploads/productServiceImage/") || imagePath.startsWith("http://localhost:3007/productServiceImage/")) {
+            if (imagePath.startsWith("https://midin.app/uploads/productServiceImage/")) {
               return match;
-            } else {
+            } else if (imagePath.startsWith("uploads/productServiceImage/")) {
+              return `<img src="https://midin.app/${imagePath}"`;
+            } else if (imagePath.startsWith("../../uploads")) {
+              const correctedPath = imagePath.replace("../..", "https://midin.app");
+              return `<img src="${correctedPath}"`;
+            } else if (imagePath.startsWith("data:image")) {
               const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
 
               const filename = Date.now() + "-" + counter++ + "." + format;
@@ -687,6 +692,8 @@ module.exports.editCompanyDetails = async (req, res) => {
               fs.writeFileSync(filePath, data, 'base64');
 
               return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+            } else {
+              return match;
             }
           }
         );
