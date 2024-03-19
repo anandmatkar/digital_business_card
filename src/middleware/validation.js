@@ -402,7 +402,7 @@ const cardValidation = {
         .trim()
         .isLength({ min: 2 })
         .withMessage("Designation must be at least 2 characters long"),
-      body("bio").trim().isLength({ min: 1 }).withMessage("Bio is required"),
+      // body("bio").trim().isLength({ min: 1 }).withMessage("Bio is required"),
       body("contact_number")
         .trim()
         .isLength({ min: 10 })
