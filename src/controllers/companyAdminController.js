@@ -1211,7 +1211,7 @@ module.exports.editCard = async (req, res) => {
         async function handleImage(bio) {
           const imgRegex = /<img[^>]+src="([^">]+)"/g;
           let counter = 1;
-
+          bio = unescape(bio);
           bio = bio.replace(
             imgRegex,
             (match, imagePath) => {
@@ -1233,7 +1233,6 @@ module.exports.editCard = async (req, res) => {
               }
             }
           );
-          bio = escape(bio);
           return bio;
         }
         bio = await handleImage(bio);
@@ -1261,14 +1260,13 @@ module.exports.editCard = async (req, res) => {
           mysql_real_escape_string(user_email.toLowerCase()),
           mysql_real_escape_string(designation),
           profile_picture,
-          bio ? (bio) : null,
+          bio ? bio : null,
           cover_pic,
           contact_number,
           card_id
         ]);
 
         if (editCardDetails.rowCount > 0) {
-          editCardDetails.rows[0].card_bio = unescape(editCardDetails.rows[0].card_bio)
           await connection.query("COMMIT");
           return handleResponse(
             res,
