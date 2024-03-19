@@ -987,6 +987,7 @@ module.exports.cardDetailsForCA = async (req, res) => {
           // Add https://midin.app/ to image URLs starting with 'uploads/bioImages/'
           findCardDetails.rows[0].bio = findCardDetails.rows[0].bio.replace(/(uploads\/bioImages\/[^"]+)/g, 'https://midin.app/$1');
           // Decode HTML entities
+          console.log(findCardDetails.rows[0].bio, "111111111111");
           findCardDetails.rows[0].bio = unescape(JSON.parse(findCardDetails.rows[0].bio));
         }
         if (findCardDetails.rows[0].is_active_for_qr) {
