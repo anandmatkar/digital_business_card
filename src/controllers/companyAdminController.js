@@ -924,52 +924,6 @@ module.exports.cardLists = async (req, res) => {
 };
 
 //card details for admin
-// module.exports.cardDetailsForCA = async (req, res) => {
-//   try {
-//     let { id } = req.user;
-//     let { card_id } = req.query;
-//     if (!card_id) {
-//       return handleResponse(res, 400, false, "Provide Valid Card Id ");
-//     }
-//     let s1 = dbScript(db_sql["Q16"], { var1: id });
-//     let findCompanyAdmin = await connection.query(s1);
-//     if (findCompanyAdmin.rowCount > 0) {
-//       let s1 = dbScript(db_sql["Q31"], { var1: card_id, var2: false });
-//       let findCardDetails = await connection.query(s1);
-//       if (findCardDetails.rowCount > 0) {
-//         if (findCardDetails.rows[0].bio) {
-//           findCardDetails.rows[0].bio = unescape(JSON.parse(findCardDetails.rows[0].bio))
-
-//         }
-//         if (findCardDetails.rows[0].is_active_for_qr) {
-//           return handleResponse(
-//             res,
-//             200,
-//             true,
-//             "Card Details",
-//             findCardDetails.rows[0]
-//           );
-//         } else {
-//           delete findCardDetails.rows[0].qr_url;
-//           return handleResponse(
-//             res,
-//             200,
-//             true,
-//             "Card Details",
-//             findCardDetails.rows[0]
-//           );
-//         }
-//       } else {
-//         return handleResponse(res, 404, false, "No cards Found");
-//       }
-//     } else {
-//       return handleResponse(res, 401, false, "Admin not found");
-//     }
-//   } catch (error) {
-//     return handleCatchErrors(res, error);
-//   }
-// };
-
 module.exports.cardDetailsForCA = async (req, res) => {
   try {
     let { id } = req.user;
@@ -984,10 +938,8 @@ module.exports.cardDetailsForCA = async (req, res) => {
       let findCardDetails = await connection.query(s1);
       if (findCardDetails.rowCount > 0) {
         if (findCardDetails.rows[0].bio) {
-          // Add https://midin.app/ to image URLs starting with '/uploads/bioImages' or '../../uploads/bioImages'
-          findCardDetails.rows[0].bio = findCardDetails.rows[0].bio.replace(/(?:\.\.\/)*uploads\/bioImages\/[^"]+/g, 'https://midin.app/$&');
-          // Decode HTML entities
-          findCardDetails.rows[0].bio = unescape(JSON.parse(findCardDetails.rows[0].bio));
+          findCardDetails.rows[0].bio = (JSON.parse(findCardDetails.rows[0].bio))
+
         }
         if (findCardDetails.rows[0].is_active_for_qr) {
           return handleResponse(
