@@ -984,10 +984,9 @@ module.exports.cardDetailsForCA = async (req, res) => {
       let findCardDetails = await connection.query(s1);
       if (findCardDetails.rowCount > 0) {
         if (findCardDetails.rows[0].bio) {
-          // Add https://midin.app/ to image URLs starting with 'uploads/bioImages/'
-          findCardDetails.rows[0].bio = findCardDetails.rows[0].bio.replace(/(uploads\/bioImages\/[^"]+)/g, 'https://midin.app/$1');
+          // Add https://midin.app/ to image URLs starting with '/uploads/bioImages' or '../../uploads/bioImages'
+          findCardDetails.rows[0].bio = findCardDetails.rows[0].bio.replace(/(?:\.\.\/)*uploads\/bioImages\/[^"]+/g, 'https://midin.app/$&');
           // Decode HTML entities
-          console.log(findCardDetails.rows[0].bio, "111111111111");
           findCardDetails.rows[0].bio = unescape(JSON.parse(findCardDetails.rows[0].bio));
         }
         if (findCardDetails.rows[0].is_active_for_qr) {
@@ -1018,6 +1017,7 @@ module.exports.cardDetailsForCA = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 };
+
 
 
 module.exports.activateSingleCardForQr = async (req, res) => {
