@@ -863,7 +863,8 @@ module.exports.createCard = async (req, res) => {
             );
             return bio;
           }
-          if (bio !== undefined || bio !== null || bio !== "") {
+          console.log(bio, "biooooooooo");
+          if (bio !== undefined && bio !== null && bio !== "") {
             bio = await handleImage(bio);
             bio = JSON.stringify(bio)
           }
@@ -1267,8 +1268,10 @@ module.exports.editCard = async (req, res) => {
           );
           return bio;
         }
-        bio = await handleImage(bio);
-        bio = JSON.stringify(bio)
+        if (bio !== undefined && bio !== null && bio !== "") {
+          bio = await handleImage(bio);
+          bio = JSON.stringify(bio)
+        }
 
         let s3 = `
   UPDATE digital_cards
