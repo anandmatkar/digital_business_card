@@ -1160,26 +1160,15 @@ module.exports.card = async (req, res) => {
       if (findCardDetails.rows[0].bio) {
         findCardDetails.rows[0].bio = unescape(JSON.parse(findCardDetails.rows[0].bio))
       }
-      if (findCardDetails.rows[0].is_active_for_qr) {
-        return handleResponse(
-          res,
-          200,
-          true,
-          "Card Details",
-          findCardDetails.rows[0]
-        );
-      } else {
-        delete findCardDetails.rows[0].qr_url;
-        return handleResponse(
-          res,
-          200,
-          true,
-          "Card Details",
-          findCardDetails.rows[0]
-        );
-      }
+      return handleResponse(
+        res,
+        200,
+        true,
+        "Card Details",
+        findCardDetails.rows[0]
+      );
     } else {
-      return handleResponse(res, 404, false, "No cards Found");
+      return handleResponse(res, 404, false, "No cards Found", {});
     }
   } catch (error) {
     return handleCatchErrors(res, error);
