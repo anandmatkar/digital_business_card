@@ -739,16 +739,9 @@ module.exports.editCompanyDetails = async (req, res) => {
         company_id
       ]);
       if (updateCompanyDetails.rowCount > 0) {
-        let s3 = dbScript(db_sql[''], {})
-        let updateSocialMedia = await connection.query(s3)
-        if (updateSocialMedia.rowCount > 0) {
-          await connection.query("COMMIT");
-          updateCompanyDetails.rows[0].product_service = unescape(updateCompanyDetails.rows[0].product_service);
-          return handleResponse(res, 200, true, "Company Details Updated Successfully.", updateCompanyDetails.rows);
-        } else {
-          await connection.query("ROLLBACK");
-          return handleSWRError(res);
-        }
+        await connection.query("COMMIT");
+        updateCompanyDetails.rows[0].product_service = unescape(updateCompanyDetails.rows[0].product_service);
+        return handleResponse(res, 200, true, "Company Details Updated Successfully.", updateCompanyDetails.rows);
       } else {
         await connection.query("ROLLBACK");
         return handleSWRError(res);
