@@ -1,4 +1,5 @@
 const connection = require("../config/database");
+const { body, validationResult } = require('express-validator');
 const {
   issueJWT,
   verifyPassResTokenCA,
@@ -23,13 +24,11 @@ const {
 } = require("../middleware/validation");
 const { dbScript, db_sql, db_sql_ca } = require("../utils/dbscript");
 const fs = require("fs");
-const path = require("path");
+let path = require("path");
 const { forgetPassword } = require("../utils/sendMail");
-const { json } = require("express");
-const multer = require("multer");
-
-const cheerio = require("cheerio"); // For parsing HTML content
 const { unescape, escape } = require("querystring");
+const ExcelJS = require('exceljs');
+
 
 /* Auth Section */
 
@@ -411,217 +410,6 @@ module.exports.uploadCompanyLogo = async (req, res) => {
   }
 };
 
-// module.exports.editCompanyDetails = async (req, res) => {
-//   try {
-//     let { id } = req.user;
-//     let {
-//       company_id,
-//       company_name,
-//       company_email,
-//       description,
-//       company_address,
-//       company_logo,
-//       company_website,
-//       location,
-//       latitude,
-//       longitude,
-//       company_contact_number,
-//       product_service,
-//     } = req.body;
-
-//     if (
-//       !company_id ||
-//       !company_name ||
-//       !company_email ||
-//       !company_contact_number
-//     ) {
-//       return handleResponse(res, 400, false, "Please provide all the fields.");
-//     }
-
-//     let isValidCId = isValidUUID(company_id);
-//     if (!isValidCId) {
-//       return handleResponse(res, 400, false, "Invalid Company Id");
-//     }
-
-//     let errors = await companyAdminValidation.editCompanyValidation(req, res);
-//     if (!errors.isEmpty()) {
-//       const firstError = errors.array()[0].msg;
-//       return handleResponse(res, 400, false, firstError);
-//     }
-
-//     await connection.query("BEGIN");
-
-//     let s1 = dbScript(db_sql["Q16"], { var1: id });
-//     let findCompanyAdmin = await connection.query(s1);
-//     if (findCompanyAdmin.rowCount > 0) {
-//       if (findCompanyAdmin.rows[0].id !== company_id) {
-//         return handleResponse(res, 400, false, "Provide Valid Company Id");
-//       }
-
-//       // async function handleImage(product_service) {
-//       //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
-//       //   let counter = 1;
-//       //   product_service = product_service.replace(
-//       //     imgRegex,
-//       //     (match, imageData) => {
-//       //       const base64Data = imageData.replace(
-//       //         /^data:image\/jpeg;base64,/,
-//       //         ""
-//       //       );
-//       //       const filename = Date.now() + "-" + counter++ + ".jpg";
-//       //       fs.writeFileSync(
-//       //         path.join(
-//       //           __dirname,
-//       //           "..",
-//       //           "..",
-//       //           "uploads",
-//       //           "productServiceImage",
-//       //           filename
-//       //         ),
-//       //         base64Data,
-//       //         "base64"
-//       //       );
-//       //       console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
-//       //       return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
-//       //     }
-//       //   );
-//       //   return product_service;
-//       // }
-
-//       // async function handleImage(product_service) {
-//       //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
-//       //   let counter = 1;
-
-//       //   product_service = product_service.replace(
-//       //     imgRegex,
-//       //     (match, imageData) => {
-//       //       if (imageData.startsWith(process.env.PRODUCT_SERVICE_IMAGE_PATH)) {
-//       //         // Image path is already in correct format, no need to replace
-//       //         return match;
-//       //       } else {
-//       //         // Extract image data
-//       //         const [, format, data] = imageData.match(/^data:image\/(\w+);base64,(.+)$/);
-
-//       //         // Generate filename
-//       //         const filename = Date.now() + "-" + counter++ + "." + format;
-
-//       //         // Decode and save image
-//       //         const imagePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
-//       //         fs.writeFileSync(imagePath, data, 'base64');
-
-//       //         console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
-//       //         return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
-//       //       }
-//       //     }
-//       //   );
-
-//       //   return product_service;
-//       // }
-
-//       // async function handleImage(product_service) {
-//       //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
-//       //   let counter = 1;
-
-//       //   product_service = product_service.replace(
-//       //     imgRegex,
-//       //     (match, imagePath) => {
-//       //       if (imagePath.startsWith("uploads/productServiceImage/")) {
-//       //         // Image path is already in correct format, no need to replace
-//       //         return match;
-//       //       } else {
-//       //         // Extract image data
-//       //         const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
-
-//       //         // Generate filename
-//       //         const filename = Date.now() + "-" + counter++ + "." + format;
-
-//       //         // Decode and save image
-//       //         const filePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
-//       //         fs.writeFileSync(filePath, data, 'base64');
-
-//       //         console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
-//       //         return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
-//       //       }
-//       //     }
-//       //   );
-
-//       //   return product_service;
-//       // }
-
-//       async function handleImage(product_service) {
-//         const imgRegex = /<img[^>]+src="([^">]+)"/g;
-//         let counter = 1;
-
-//         product_service = product_service.replace(
-//           imgRegex,
-//           (match, imagePath) => {
-//             if (imagePath.startsWith("uploads/productServiceImage/") || imagePath.startsWith("https://midin.app/uploads/productServiceImage/") || imagePath.startsWith("http://localhost:3007/productServiceImage/")) {
-//               // Image path is already in correct format, no need to replace
-//               return match;
-//             } else {
-//               // Extract image data
-//               const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
-
-//               // Generate filename
-//               const filename = Date.now() + "-" + counter++ + "." + format;
-
-//               // Decode and save image
-//               const filePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
-//               fs.writeFileSync(filePath, data, 'base64');
-
-//               console.log(`<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`, "image path");
-//               return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
-//             }
-//           }
-//         );
-
-//         // Escape text content to prevent SQL injection
-//         product_service = mysql_real_escape_string(product_service);
-//         console.log(product_service, "encodedddddddd");
-
-//         return product_service;
-//       }
-
-//       product_service = await handleImage(product_service);
-//       product_service = JSON.stringify(product_service)
-//       let s2 = dbScript(db_sql["Q27"], {
-//         var1: mysql_real_escape_string(company_name),
-//         var2: mysql_real_escape_string(company_email.toLowerCase()),
-//         var3: description ? mysql_real_escape_string(description) : null,
-//         var4: mysql_real_escape_string(company_address),
-//         var5: company_logo,
-//         var6: company_website
-//           ? mysql_real_escape_string(company_website)
-//           : null,
-//         var7: location,
-//         var8: latitude ? latitude : null,
-//         var9: longitude ? longitude : null,
-//         var10: company_contact_number,
-//         var11: (product_service),
-//         var12: id,
-//         var13: company_id,
-//       });
-//       let updateCompanyDetails = await connection.query(s2);
-//       await connection.query("COMMIT");
-//       updateCompanyDetails.rows[0].product_service = unescape(updateCompanyDetails.rows[0].product_service)
-//       return handleResponse(
-//         res,
-//         200,
-//         true,
-//         "Company Details Updated Successfully.",
-//         updateCompanyDetails.rows
-//       );
-//     } else {
-//       return handleResponse(res, 401, false, "Admin not found");
-//     }
-//   } catch (error) {
-//     await connection.query("ROLLBACK");
-//     console.error(error);
-//     return res.status(500).json({ error: error.stack });
-//   }
-// };
-
-
 module.exports.editCompanyDetails = async (req, res) => {
   try {
     let { id } = req.user;
@@ -923,7 +711,6 @@ module.exports.createCard = async (req, res) => {
             );
             return bio;
           }
-          console.log(bio, "biooooooooo");
           if (bio !== undefined && bio !== null && bio !== "") {
             bio = await handleImage(bio);
             bio = JSON.stringify(bio)
@@ -1055,7 +842,6 @@ module.exports.cardDetailsForCA = async (req, res) => {
           // Add https://midin.app/ to image URLs starting with '/uploads/bioImages' or '../../uploads/bioImages' only if not already starting with 'https://midin.app/'
           findCardDetails.rows[0].bio = findCardDetails.rows[0].bio.replace(/(?<!https:\/\/midin\.app\/)(?:\.\.\/)*uploads\/bioImages\/[^"]+/g, 'https://midin.app/$&');
           // Decode HTML entities
-          console.log(findCardDetails.rows[0].bio, "11111111111");
           findCardDetails.rows[0].bio = (JSON.parse(findCardDetails.rows[0].bio));
         }
         if (findCardDetails.rows[0].is_active_for_qr) {
@@ -1538,3 +1324,255 @@ module.exports.qrCodeList = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 };
+
+//File Upload and Download
+
+// module.exports.uploadCreateCardFile = async (req, res) => {
+//   try {
+//     let { id } = req.user;
+//     await connection.query("BEGIN");
+
+//     let s1 = dbScript(db_sql["Q16"], { var1: id });
+//     let findCompanyAdmin = await connection.query(s1);
+
+//     if (findCompanyAdmin.rowCount > 0) {
+//       if (!req.file) {
+//         return res.status(400).json({ success: false, message: 'No file uploaded' });
+//       }
+
+//       let { path } = req.file;
+//       const workbook = new ExcelJS.Workbook();
+//       await workbook.xlsx.readFile(path);
+//       const worksheet = workbook.getWorksheet(1);
+
+//       let hasData = false;
+
+//       worksheet.eachRow(async (row, rowNumber) => {
+//         if (rowNumber !== 1) {
+//           hasData = true;
+//           const [, first_name, last_name, user_email, designation, contact_number] = row.values;
+//           console.log(first_name, last_name, user_email, designation, contact_number);
+//           let errors = await cardValidation.createCardVal(req, res);
+//           if (!errors.isEmpty()) {
+//             const firstError = errors.array()[0].msg;
+//             return handleResponse(res, 400, false, firstError);
+//           }
+//           let s0 = dbScript(db_sql["Q34"], { var1: mysql_real_escape_string(user_email.toLowerCase()), });
+//           let checkEmailInDC = await connection.query(s0);
+//           if (checkEmailInDC.rowCount === 0) {
+//             let usedCards = findCompanyAdmin.rows[0].used_cards;
+//             let maxCards = findCompanyAdmin.rows[0].max_cards;
+//             if (usedCards >= maxCards) {
+//               return handleResponse(
+//                 res,
+//                 400,
+//                 false,
+//                 "Maximum cards limit reached for this company"
+//               );
+//             }
+
+
+
+//             let companyName = formatCompanyName(
+//               findCompanyAdmin.rows[0].company_name
+//             );
+//             companyName = companyName.toLowerCase();
+//             let company_ref = companyName;
+//             let card_ref = randomstring.generate({
+//               length: 5,
+//               charset: "alphanumeric",
+//             });
+//             card_ref = card_ref.toLowerCase();
+//             let qrCodeLink = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`;
+//             let databaseLinkQR = `${process.env.DATABASE_LINK_FOR_QR}/${companyName}/${card_ref}.png`;
+//             let qrCodeDirectory = path.join(
+//               __dirname,
+//               "../../",
+//               "./uploads",
+//               "qrCode",
+//               companyName
+//             );
+//             let qrCodeFileName = `${card_ref}.png`;
+//             let card_link = `${process.env.LINK_OF_DIGITAL_CARD}/${companyName}/${card_ref}`;
+
+//             fs.mkdirSync(qrCodeDirectory, { recursive: true });
+
+//             let qrSuccess = await generateQRCode(
+//               qrCodeLink,
+//               qrCodeDirectory,
+//               qrCodeFileName
+//             );
+//             if (qrSuccess) {
+//               cover_pic = cover_pic ? cover_pic : process.env.DEFAULT_CARD_COVER_PIC;
+//               profile_picture = profile_picture ? profile_picture : process.env.DEFAULT_USER_PROFILE_PIC;
+//               let created_by = findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
+//               let s2 = `
+//                 INSERT INTO digital_cards 
+//                   (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number) 
+//                 VALUES 
+//                   ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+//                 RETURNING *`;
+
+//               let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, first_name, last_name, user_email.toLowerCase(), designation, databaseLinkQR, "user", card_link, null, company_ref, contact_number]);
+//               console.log(insertData.rows, "222222222");
+
+//               if (insertData.rowCount > 0) {
+//                 let s4 = dbScript(db_sql["Q20"], {
+//                   var1: Number(usedCards) + 1,
+//                   var2: findCompanyAdmin.rows[0].id,
+//                 });
+//                 let updateCardCount = await connection.query(s4);
+//                 if (updateCardCount.rowCount > 0) {
+//                   // await connection.query("COMMIT");
+//                   return handleResponse(res, 201, true, "Card Created Successfully", insertData.rows);
+//                 } else {
+//                   await connection.query("ROLLBACK");
+//                   return handleSWRError(res);
+//                 }
+//               } else {
+//                 await connection.query("ROLLBACK");
+//                 return handleSWRError(res);
+//               }
+//             } else {
+//               await connection.query("ROLLBACK");
+//               return handleSWRError(res);
+//             }
+//           } else {
+//             console.log(`Skipping row ${rowNumber} as email already exists in the database`);
+//           }
+//         }
+//       });
+
+//       // if (!hasData) {
+//       //   return res.status(400).json({ success: false, message: 'Uploaded file is empty' });
+//       // }
+//     } else {
+//       return handleResponse(res, 401, false, "Admin not found");
+//     }
+//   } catch (error) {
+//     await connection.query("ROLLBACK");
+//     return handleCatchErrors(res, error);
+//   }
+// }
+
+module.exports.uploadCreateCardFile = async (req, res) => {
+  try {
+    let { id } = req.user;
+    await connection.query("BEGIN");
+
+    let s1 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s1);
+
+    if (findCompanyAdmin.rowCount > 0) {
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+      }
+
+      let { path } = req.file;
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.readFile(path);
+      const worksheet = workbook.getWorksheet(1);
+
+      let hasData = false;
+      let createdCards = [];
+
+      for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber++) {
+        const row = worksheet.getRow(rowNumber);
+        if (rowNumber !== 1) {
+          hasData = true;
+          let [, first_name, last_name, user_email, designation, contact_number] = row.values;
+          console.log(first_name, last_name, user_email, designation, contact_number);
+          function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+          }
+
+          let isValid = isValidEmail(user_email)
+          if (!isValid) {
+            handleResponse(res, 400, false, "Invalid Email address");
+            break;
+          }
+
+          let s0 = dbScript(db_sql["Q34"], { var1: mysql_real_escape_string(user_email.toLowerCase()), });
+          let checkEmailInDC = await connection.query(s0);
+          if (checkEmailInDC.rowCount === 0) {
+            let usedCards = findCompanyAdmin.rows[0].used_cards;
+            let maxCards = findCompanyAdmin.rows[0].max_cards;
+            if (usedCards >= maxCards) {
+              return handleResponse(res, 400, false, "Maximum cards limit reached for this company");
+            }
+            path = require("path");
+            let companyName = formatCompanyName(findCompanyAdmin.rows[0].company_name);
+            companyName = companyName.toLowerCase();
+            console.log(companyName, "Company Name");
+            let company_ref = companyName;
+            let card_ref = randomstring.generate({ length: 5, charset: "alphanumeric", });
+            card_ref = card_ref.toLowerCase();
+            console.log(card_ref, "card_refff");
+            let qrCodeLink = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`;
+            console.log(qrCodeLink, "QRLink");
+            let databaseLinkQR = `${process.env.DATABASE_LINK_FOR_QR}/${companyName}/${card_ref}.png`;
+            console.log(databaseLinkQR, "databaselink");
+            let qrCodeDirectory = path.join(__dirname, "../../", "./uploads", "qrCode", companyName);
+            console.log(qrCodeDirectory, "directory");
+            let qrCodeFileName = `${card_ref}.png`;
+            let card_link = `${process.env.LINK_OF_DIGITAL_CARD}/${companyName}/${card_ref}`;
+
+            fs.mkdirSync(qrCodeDirectory, { recursive: true });
+
+            let qrSuccess = await generateQRCode(qrCodeLink, qrCodeDirectory, qrCodeFileName);
+            if (qrSuccess) {
+              // let cover_pic = process.env.DEFAULT_CARD_COVER_PIC;
+              let profile_picture = process.env.DEFAULT_USER_PROFILE_PIC;
+              let created_by = findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
+              let s2 = `
+                INSERT INTO digital_cards 
+                  (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number,profile_picture) 
+                VALUES 
+                  ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,$14) 
+                RETURNING *`;
+              console.log(s2, "s22222222222");
+              let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, mysql_real_escape_string(first_name), mysql_real_escape_string(last_name), mysql_real_escape_string(user_email.toLowerCase()), mysql_real_escape_string(designation), databaseLinkQR, "user", card_link, null, mysql_real_escape_string(company_ref), contact_number, profile_picture]);
+              console.log(insertData.rows, "222222222");
+
+              if (insertData.rowCount > 0) {
+                let s4 = dbScript(db_sql["Q20"], { var1: Number(usedCards) + 1, var2: findCompanyAdmin.rows[0].id, });
+                let updateCardCount = await connection.query(s4);
+                if (updateCardCount.rowCount > 0) {
+                  createdCards.push(...insertData.rows);
+                } else {
+                  await connection.query("ROLLBACK");
+                  return handleSWRError(res);
+                }
+              } else {
+                await connection.query("ROLLBACK");
+                return handleSWRError(res);
+              }
+            } else {
+              await connection.query("ROLLBACK");
+              return handleSWRError(res);
+            }
+          } else {
+            return handleResponse(res, 400, false, `Card Creation Failed as email ${user_email} already exists in the database`);
+          }
+        }
+      }
+
+      if (!hasData) {
+        return res.status(400).json({ success: false, message: 'Uploaded file is empty' });
+      }
+
+      await connection.query("COMMIT");
+      return handleResponse(res, 201, true, "Cards Created Successfully", createdCards);
+    } else {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+  } catch (error) {
+    await connection.query("ROLLBACK");
+    return handleCatchErrors(res, error);
+  }
+}
+
+
+
+

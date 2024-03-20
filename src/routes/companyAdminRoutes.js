@@ -1,7 +1,7 @@
 const express = require("express");
 const controller = require("../controllers/indexController");
 const { verifyTokenForCA } = require("../middleware/authMiddleware");
-const { uploadCardProfilePic, uploadCardCoverePic, uploadCompanyLogo, uploadCAAvatar } = require("../utils/uploadFiles");
+const { uploadCardProfilePic, uploadCardCoverePic, uploadCompanyLogo, uploadCAAvatar, uploadCardFile } = require("../utils/uploadFiles");
 const { uploadCardCoverPicture } = require("../controllers/companyAdminController");
 const { validate } = require("../middleware/validation");
 const router = express.Router();
@@ -29,6 +29,7 @@ router.put("/deleteCard", verifyTokenForCA, controller.companyAdminController.de
 router.put("/editCard", verifyTokenForCA, controller.companyAdminController.editCard);
 router.post("/uploadCardProfilePicture", verifyTokenForCA, uploadCardProfilePic.single("image"), controller.companyAdminController.uploadCardProfilePicture);
 router.post("/uploadCardCoverPicture", verifyTokenForCA, uploadCardCoverePic.single("image"), controller.companyAdminController.uploadCardCoverPicture);
+router.post("/uploadCreateCardFile", verifyTokenForCA, uploadCardFile.single('file'), controller.companyAdminController.uploadCreateCardFile);
 
 /** == company section== */
 router.post("/uploadCompanyLogo", verifyTokenForCA, uploadCompanyLogo.single("image"), controller.companyAdminController.uploadCompanyLogo);
