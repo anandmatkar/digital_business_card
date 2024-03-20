@@ -797,7 +797,9 @@ module.exports.companyDetails = async (req, res) => {
     let s1 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
     if (findCompanyAdmin.rowCount > 0) {
-      findCompanyAdmin.rows[0].product_service = unescape(JSON.parse(findCompanyAdmin.rows[0].product_service));
+      if (findCompanyAdmin.rows[0].product_service) {
+        findCompanyAdmin.rows[0].product_service = unescape(JSON.parse(findCompanyAdmin.rows[0].product_service));
+      }
       return handleResponse(res, 200, true, "Company Details", findCompanyAdmin.rows);
     } else {
       return handleResponse(res, 401, false, "Admin not found");
