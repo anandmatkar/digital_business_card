@@ -111,13 +111,13 @@ const db_sql = {
             GROUP BY 
                 c.id;`,
   Q17: `INSERT INTO digital_cards (company_id, created_by, card_reference, first_name, last_name,user_email, designation,bio,qr_url, user_type,cover_pic,profile_picture,card_url,vcf_card_url,company_ref, contact_number ) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}') RETURNING *`,
-  Q18: `INSERT INTO user_media_link (facebook, instagram, extra_link_title, extra_link_url,linkedin,twitter,telegram,whatsapp, youtube,tiktok,line,we_chat,xiao_hong_shu,weibo, digital_card_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}','{var15}') RETURNING *`,
+  Q18: `INSERT INTO user_media_link (facebook, instagram, extra_link_title, extra_link_url,linkedin,twitter,telegram,whatsapp, youtube,tiktok,line,we_chat,xiao_hong_shu,weibo, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}','{var15}') RETURNING *`,
   Q19: `SELECT dc.*,
           c.company_name,c.company_email,c.company_address,c.company_logo,c.company_contact_number,c.company_website,c.location, c.product_service,
           usm.facebook, usm.instagram, usm.extra_link_title, usm.extra_link_url, usm.whatsapp, usm.weibo, usm.xiao_hong_shu, usm.linkedin, usm.twitter, usm.telegram, usm.youtube, usm.tiktok, usm.line, usm.we_chat
         FROM digital_cards dc
           LEFT JOIN company c on c.id = dc.company_id 
-          LEFT JOIN user_media_link usm ON usm.digital_card_id = dc.id
+          LEFT JOIN user_media_link usm ON usm.company_id = c.id
         WHERE dc.company_ref = '{var1}' AND dc.card_reference = '{var2}' AND dc.is_deactivated = '{var3}' 
           AND dc.deleted_at IS NULL AND c.deleted_at IS NULL AND c.status = 'activated'`,
   Q20: `UPDATE company SET used_cards = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
@@ -147,47 +147,50 @@ const db_sql = {
   Q37: `SELECT * FROM super_admin WHERE id = '{var1}' AND deleted_at IS NULL`,
   Q38: `UPDATE super_admin SET password = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   Q39: `WITH updated_card AS (
-    UPDATE digital_cards
-    SET 
-      first_name = '{var1}',
-      last_name = '{var2}',
-      user_email = '{var3}',
-      designation = '{var4}',
-      profile_picture = '{var5}',
-      bio = '{var6}',
-      cover_pic = '{var7}',
-      contact_number = '{var8}'
-    WHERE
-      id = '{var9}' 
-      AND deleted_at IS NULL
-    RETURNING *
-  )
-  UPDATE user_media_link AS uml
-  SET 
-    facebook = '{var10}',
-    instagram = '{var11}',
-    whatsapp = '{var12}',
-    twitter = '{var13}',
-    telegram = '{var14}',
-    we_chat = '{var15}',
-    line = '{var16}',
-    youtube = '{var17}',
-    tiktok = '{var18}',
-    xiao_hong_shu = '{var19}',
-    linkedin = '{var20}',
-    weibo = '{var21}'
-  FROM updated_card
-  WHERE uml.digital_card_id = updated_card.id
-  RETURNING updated_card.id AS card_id,
-            updated_card.first_name,
-            updated_card.last_name,
-            updated_card.user_email,
-            updated_card.designation,
-            updated_card.profile_picture AS card_profile_picture,
-            updated_card.bio AS card_bio,
-            updated_card.cover_pic AS card_cover_pic,
-            updated_card.contact_number,
-            uml.*`,
+            UPDATE digital_cards
+            SET 
+              first_name = '{var1}',
+              last_name = '{var2}',
+              user_email = '{var3}',
+              designation = '{var4}',
+              profile_picture = '{var5}',
+              bio = '{var6}',
+              cover_pic = '{var7}',
+              contact_number = '{var8}'
+            WHERE
+              id = '{var9}' 
+              AND deleted_at IS NULL
+            RETURNING *
+          )
+          UPDATE user_media_link AS uml
+          SET 
+            facebook = '{var10}',
+            instagram = '{var11}',
+            whatsapp = '{var12}',
+            twitter = '{var13}',
+            telegram = '{var14}',
+            we_chat = '{var15}',
+            line = '{var16}',
+            youtube = '{var17}',
+            tiktok = '{var18}',
+            xiao_hong_shu = '{var19}',
+            linkedin = '{var20}',
+            weibo = '{var21}'
+          FROM updated_card
+          WHERE uml.digital_card_id = updated_card.id
+          RETURNING updated_card.id AS card_id,
+                    updated_card.first_name,
+                    updated_card.last_name,
+                    updated_card.user_email,
+                    updated_card.designation,
+                    updated_card.profile_picture AS card_profile_picture,
+                    updated_card.bio AS card_bio,
+                    updated_card.cover_pic AS card_cover_pic,
+                    updated_card.contact_number,
+                    uml.*`,
+  Q40: `SELECT facebook,instagram,twitter,youtube,we_chat,line,telegram,linkedin,xiao_hong_shu, weibo,tiktok, extra_link_title,extra_link_url, company_id FROM user_media_link WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+  Q41: `UPDATE user_media_link SET facebook = '{var1}', instagram = '{var2}', twitter = '{var3}', youtube = '{var4}', linkedin = '{var5}',xiao_hong_shu = '{var6}',tiktok = '{var7}',we_chat = '{var8}',line = '{var9}', telegram = '{var10}', weibo = '{var11}' WHERE company_id = '{var12}' AND deleted_at IS NULL RETURNING *`
+
 };
 
 const db_sql_ca = {

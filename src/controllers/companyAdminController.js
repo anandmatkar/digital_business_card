@@ -637,7 +637,7 @@ module.exports.editCompanyDetails = async (req, res) => {
       latitude,
       longitude,
       company_contact_number,
-      product_service,
+      product_service
     } = req.body;
 
     if (
@@ -738,16 +738,21 @@ module.exports.editCompanyDetails = async (req, res) => {
         id,
         company_id
       ]);
-
-      await connection.query("COMMIT");
-      updateCompanyDetails.rows[0].product_service = unescape(updateCompanyDetails.rows[0].product_service);
-      return handleResponse(
-        res,
-        200,
-        true,
-        "Company Details Updated Successfully.",
-        updateCompanyDetails.rows
-      );
+      if (updateCompanyDetails.rowCount > 0) {
+        let s3 = dbScript(db_sql[''], {})
+        let updateSocialMedia = await connection.query(s3)
+        if (updateSocialMedia.rowCount > 0) {
+          await connection.query("COMMIT");
+          updateCompanyDetails.rows[0].product_service = unescape(updateCompanyDetails.rows[0].product_service);
+          return handleResponse(res, 200, true, "Company Details Updated Successfully.", updateCompanyDetails.rows);
+        } else {
+          await connection.query("ROLLBACK");
+          return handleSWRError(res);
+        }
+      } else {
+        await connection.query("ROLLBACK");
+        return handleSWRError(res);
+      }
     } else {
       return handleResponse(res, 401, false, "Admin not found");
     }
@@ -758,6 +763,33 @@ module.exports.editCompanyDetails = async (req, res) => {
   }
 };
 
+module.exports.socialMediaDetails = async (req, res) => {
+  try {
+    let { id } = req.user;
+    let { company_id } = req.query;
+    if (!company_id) {
+      return handleResponse(res, 400, false, 'Please provide the company ID');
+    }
+    let s1 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s1);
+    if (findCompanyAdmin.rowCount > 0) {
+      if (findCompanyAdmin.rows[0].id !== company_id) {
+        return handleResponse(res, 401, false, "You are unauthorized to access this data.");
+      }
+      let s2 = dbScript(db_sql["Q40"], { var1: company_id });
+      let findSocialMediaLinks = await connection.query(s2)
+      if (findSocialMediaLinks.rowCount > 0) {
+        return handleResponse(res, 200, true, "Social Media Details", findSocialMediaLinks.rows);
+      } else {
+        return handleResponse(res, 200, false, "Empty Social Media Details", []);
+      }
+    } else {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+  } catch (error) {
+    return handleCatchErrors(res, error);
+  }
+};
 
 module.exports.companyDetails = async (req, res) => {
   try {
@@ -774,6 +806,37 @@ module.exports.companyDetails = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 };
+
+module.exports.editSocialMedia = async (req, res) => {
+  try {
+    let { id } = req.user;
+
+    let { company_id, facebook, instagram, linkedin, youtube, xiao_hong_shu, tiktok, wechat, line, telegram, weibo, twitter } = req.body;
+    await connection.query("BEGIN");
+
+    let s1 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s1);
+    if (findCompanyAdmin.rowCount > 0) {
+      if (findCompanyAdmin.rows[0].id !== company_id) {
+        return handleResponse(res, 401, false, "You are unauthorized to change this data.");
+      }
+      let s2 = dbScript(db_sql["Q41"], { var1: facebook, var2: instagram, var3: twitter, var4: youtube, var5: linkedin, var6: xiao_hong_shu, var7: tiktok, var8: wechat, var9: line, var10: telegram, var11: weibo, var12: company_id });
+      let updateSocialMedia = await connection.query(s2);
+      if (updateSocialMedia.rowCount > 0) {
+        await connection.query("COMMIT")
+        return handleResponse(res, 200, true, "Social Media Updated Successfully", updateSocialMedia.rows);
+      } else {
+        await connection.query("ROLLBACK");
+        return handleSWRError(res);
+      }
+    } else {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+  } catch (error) {
+    await connection.query("ROLLBACK");
+    return handleCatchErrors(res, error);
+  }
+}
 
 /** ========card section===== */
 

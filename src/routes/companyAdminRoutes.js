@@ -33,7 +33,9 @@ router.post("/uploadCardCoverPicture", verifyTokenForCA, uploadCardCoverePic.sin
 /** == company section== */
 router.post("/uploadCompanyLogo", verifyTokenForCA, uploadCompanyLogo.single("image"), controller.companyAdminController.uploadCompanyLogo);
 router.post("/editCompanyDetails", verifyTokenForCA, controller.companyAdminController.editCompanyDetails);
+router.put("/editSocialMedia", verifyTokenForCA, controller.companyAdminController.editSocialMedia);
 router.get("/companyDetails", verifyTokenForCA, controller.companyAdminController.companyDetails);
+router.get("/socialMediaDetails", verifyTokenForCA, controller.companyAdminController.socialMediaDetails);
 router.get("/qrCodeList", verifyTokenForCA, controller.companyAdminController.qrCodeList);
 
 

@@ -451,26 +451,19 @@ module.exports.createCompany = async (req, res) => {
       if (checkCompanyAlreadyExists.rowCount == 0) {
         let company_logo = process.env.DEFAULT_COMPANY_LOGO;
 
-        let s3 = dbScript(db_sql["Q6"], {
-          var1: mysql_real_escape_string(company_name),
-          var2: mysql_real_escape_string(company_email.toLowerCase()),
-          var3: mysql_real_escape_string(company_contact_number),
-          var4: max_cards,
-          var5: mysql_real_escape_string(contact_person_name),
-          var6: mysql_real_escape_string(contact_person_email.toLowerCase()),
-          var7: company_logo,
-        });
+        let s3 = dbScript(db_sql["Q6"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: mysql_real_escape_string(company_contact_number), var4: max_cards, var5: mysql_real_escape_string(contact_person_name), var6: mysql_real_escape_string(contact_person_email.toLowerCase()), var7: company_logo, });
         let createCompany = await connection.query(s3);
 
         if (createCompany.rowCount) {
-          await connection.query("COMMIT");
-          return handleResponse(
-            res,
-            201,
-            true,
-            "Company Created Successfully",
-            createCompany.rows
-          );
+          let s3 = dbScript(db_sql["Q18"], { var1: null, var2: null, var3: null, var4: null, var5: null, var6: null, var7: null, var8: null, var9: null, var10: null, var11: null, var12: null, var13: null, var14: null, var15: createCompany.rows[0].id });
+          let createSocialMedia = await connection.query(s3);
+          if (createSocialMedia.rowCount > 0) {
+            await connection.query("COMMIT");
+            return handleResponse(res, 201, true, "Company Created Successfully", createCompany.rows);
+          } else {
+            await connection.query("ROLLBACK");
+            return handleSWRError(res);
+          }
         } else {
           await connection.query("ROLLBACK");
           return handleSWRError(res);
