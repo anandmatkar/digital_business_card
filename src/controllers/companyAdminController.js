@@ -870,11 +870,13 @@ module.exports.createCard = async (req, res) => {
         let companyName = formatCompanyName(
           findCompanyAdmin.rows[0].company_name
         );
+        companyName = companyName.toLowerCase();
         let company_ref = companyName;
-        const card_ref = randomstring.generate({
+        let card_ref = randomstring.generate({
           length: 5,
           charset: "alphanumeric",
         });
+        card_ref = card_ref.toLowerCase();
         let qrCodeLink = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`;
         let databaseLinkQR = `${process.env.DATABASE_LINK_FOR_QR}/${companyName}/${card_ref}.png`;
         let qrCodeDirectory = path.join(
@@ -942,7 +944,7 @@ module.exports.createCard = async (req, res) => {
             });
             let updateCardCount = await connection.query(s4);
             if (updateCardCount.rowCount > 0) {
-              await connection.query("COMMIT");
+              // await connection.query("COMMIT");
               return handleResponse(res, 201, true, "Card Created Successfully", insertData.rows);
             } else {
               await connection.query("ROLLBACK");
