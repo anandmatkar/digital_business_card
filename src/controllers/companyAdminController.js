@@ -944,7 +944,7 @@ module.exports.createCard = async (req, res) => {
             });
             let updateCardCount = await connection.query(s4);
             if (updateCardCount.rowCount > 0) {
-              // await connection.query("COMMIT");
+              await connection.query("COMMIT");
               return handleResponse(res, 201, true, "Card Created Successfully", insertData.rows);
             } else {
               await connection.query("ROLLBACK");
