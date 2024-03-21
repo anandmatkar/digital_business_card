@@ -29,7 +29,6 @@ const { forgetPassword } = require("../utils/sendMail");
 const { unescape, escape } = require("querystring");
 const ExcelJS = require('exceljs');
 
-
 /* Auth Section */
 
 module.exports.loginCompanyAdmin = async (req, res) => {
@@ -1631,7 +1630,7 @@ module.exports.exportCardDetail = async (req, res) => {
         // Generate Excel buffer
         const excelBuffer = await workbook.xlsx.writeBuffer();
 
-        // Send Excel file in response
+        // Send Excel file in response with proper headers
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename="card_details.xlsx"');
         res.send(excelBuffer);
@@ -1645,6 +1644,8 @@ module.exports.exportCardDetail = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 }
+
+
 
 
 
