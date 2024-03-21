@@ -1660,7 +1660,7 @@ module.exports.exportCardDetail = async (req, res) => {
 
         // Constructing the URL
         const baseUrl = req.protocol + '://' + req.get('host');
-        const fileUrl = `${baseUrl}/cardDetails/${fileName}`;
+        const fileUrl = `${baseUrl}/uploads/cardDetails/${fileName}`;
 
         // Sending the URL in response
         res.status(200).json({ fileUrl });
