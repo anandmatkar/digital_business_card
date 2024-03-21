@@ -584,6 +584,7 @@ module.exports.companyDetails = async (req, res) => {
       if (findCompanyAdmin.rows[0].product_service) {
         findCompanyAdmin.rows[0].product_service = unescape(JSON.parse(findCompanyAdmin.rows[0].product_service));
       }
+      findCompanyAdmin.rows[0].cover_pic = findCompanyAdmin.rows[0].cover_pic || process.env.DEFAULT_CARD_COVER_PIC;
       return handleResponse(res, 200, true, "Company Details", findCompanyAdmin.rows);
     } else {
       return handleResponse(res, 401, false, "Admin not found");
@@ -1008,6 +1009,8 @@ module.exports.card = async (req, res) => {
       if (findCardDetails.rows[0].bio) {
         findCardDetails.rows[0].bio = unescape(JSON.parse(findCardDetails.rows[0].bio))
       }
+      findCardDetails.rows[0].cover_pic = findCardDetails.rows[0].cover_pic || process.env.DEFAULT_CARD_COVER_PIC;
+
       return handleResponse(
         res,
         200,
@@ -1347,85 +1350,72 @@ module.exports.qrCodeList = async (req, res) => {
 //       const worksheet = workbook.getWorksheet(1);
 
 //       let hasData = false;
+//       let createdCards = [];
 
-//       worksheet.eachRow(async (row, rowNumber) => {
+//       for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber++) {
+//         const row = worksheet.getRow(rowNumber);
 //         if (rowNumber !== 1) {
 //           hasData = true;
-//           const [, first_name, last_name, user_email, designation, contact_number] = row.values;
+//           let [, first_name, last_name, user_email, designation, contact_number] = row.values;
 //           console.log(first_name, last_name, user_email, designation, contact_number);
-//           let errors = await cardValidation.createCardVal(req, res);
-//           if (!errors.isEmpty()) {
-//             const firstError = errors.array()[0].msg;
-//             return handleResponse(res, 400, false, firstError);
+//           function isValidEmail(email) {
+//             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//             return emailRegex.test(email);
 //           }
+
+//           let isValid = isValidEmail(user_email)
+//           if (!isValid) {
+//             handleResponse(res, 400, false, "Invalid Email address");
+//             break;
+//           }
+
 //           let s0 = dbScript(db_sql["Q34"], { var1: mysql_real_escape_string(user_email.toLowerCase()), });
 //           let checkEmailInDC = await connection.query(s0);
 //           if (checkEmailInDC.rowCount === 0) {
 //             let usedCards = findCompanyAdmin.rows[0].used_cards;
 //             let maxCards = findCompanyAdmin.rows[0].max_cards;
 //             if (usedCards >= maxCards) {
-//               return handleResponse(
-//                 res,
-//                 400,
-//                 false,
-//                 "Maximum cards limit reached for this company"
-//               );
+//               return handleResponse(res, 400, false, "Maximum cards limit reached for this company");
 //             }
-
-
-
-//             let companyName = formatCompanyName(
-//               findCompanyAdmin.rows[0].company_name
-//             );
+//             path = require("path");
+//             let companyName = formatCompanyName(findCompanyAdmin.rows[0].company_name);
 //             companyName = companyName.toLowerCase();
+//             console.log(companyName, "Company Name");
 //             let company_ref = companyName;
-//             let card_ref = randomstring.generate({
-//               length: 5,
-//               charset: "alphanumeric",
-//             });
+//             let card_ref = randomstring.generate({ length: 5, charset: "alphanumeric", });
 //             card_ref = card_ref.toLowerCase();
+//             console.log(card_ref, "card_refff");
 //             let qrCodeLink = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`;
+//             console.log(qrCodeLink, "QRLink");
 //             let databaseLinkQR = `${process.env.DATABASE_LINK_FOR_QR}/${companyName}/${card_ref}.png`;
-//             let qrCodeDirectory = path.join(
-//               __dirname,
-//               "../../",
-//               "./uploads",
-//               "qrCode",
-//               companyName
-//             );
+//             console.log(databaseLinkQR, "databaselink");
+//             let qrCodeDirectory = path.join(__dirname, "../../", "./uploads", "qrCode", companyName);
+//             console.log(qrCodeDirectory, "directory");
 //             let qrCodeFileName = `${card_ref}.png`;
 //             let card_link = `${process.env.LINK_OF_DIGITAL_CARD}/${companyName}/${card_ref}`;
 
 //             fs.mkdirSync(qrCodeDirectory, { recursive: true });
 
-//             let qrSuccess = await generateQRCode(
-//               qrCodeLink,
-//               qrCodeDirectory,
-//               qrCodeFileName
-//             );
+//             let qrSuccess = await generateQRCode(qrCodeLink, qrCodeDirectory, qrCodeFileName);
 //             if (qrSuccess) {
-//               cover_pic = cover_pic ? cover_pic : process.env.DEFAULT_CARD_COVER_PIC;
-//               profile_picture = profile_picture ? profile_picture : process.env.DEFAULT_USER_PROFILE_PIC;
+//               // let cover_pic = process.env.DEFAULT_CARD_COVER_PIC;
+//               let profile_picture = process.env.DEFAULT_USER_PROFILE_PIC;
 //               let created_by = findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
 //               let s2 = `
-//                 INSERT INTO digital_cards 
-//                   (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number) 
-//                 VALUES 
-//                   ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+//                 INSERT INTO digital_cards
+//                   (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number,profile_picture)
+//                 VALUES
+//                   ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,$14)
 //                 RETURNING *`;
-
-//               let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, first_name, last_name, user_email.toLowerCase(), designation, databaseLinkQR, "user", card_link, null, company_ref, contact_number]);
+//               console.log(s2, "s22222222222");
+//               let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, mysql_real_escape_string(first_name), mysql_real_escape_string(last_name), mysql_real_escape_string(user_email.toLowerCase()), mysql_real_escape_string(designation), databaseLinkQR, "user", card_link, null, mysql_real_escape_string(company_ref), contact_number, profile_picture]);
 //               console.log(insertData.rows, "222222222");
 
 //               if (insertData.rowCount > 0) {
-//                 let s4 = dbScript(db_sql["Q20"], {
-//                   var1: Number(usedCards) + 1,
-//                   var2: findCompanyAdmin.rows[0].id,
-//                 });
+//                 let s4 = dbScript(db_sql["Q20"], { var1: Number(usedCards) + 1, var2: findCompanyAdmin.rows[0].id, });
 //                 let updateCardCount = await connection.query(s4);
 //                 if (updateCardCount.rowCount > 0) {
-//                   // await connection.query("COMMIT");
-//                   return handleResponse(res, 201, true, "Card Created Successfully", insertData.rows);
+//                   createdCards.push(...insertData.rows);
 //                 } else {
 //                   await connection.query("ROLLBACK");
 //                   return handleSWRError(res);
@@ -1439,14 +1429,17 @@ module.exports.qrCodeList = async (req, res) => {
 //               return handleSWRError(res);
 //             }
 //           } else {
-//             console.log(`Skipping row ${rowNumber} as email already exists in the database`);
+//             return handleResponse(res, 400, false, `Card Creation Failed as email ${user_email} already exists in the database`);
 //           }
 //         }
-//       });
+//       }
 
-//       // if (!hasData) {
-//       //   return res.status(400).json({ success: false, message: 'Uploaded file is empty' });
-//       // }
+//       if (!hasData) {
+//         return res.status(400).json({ success: false, message: 'Uploaded file is empty' });
+//       }
+
+//       await connection.query("COMMIT");
+//       return handleResponse(res, 201, true, "Cards Created Successfully", createdCards);
 //     } else {
 //       return handleResponse(res, 401, false, "Admin not found");
 //     }
@@ -1476,6 +1469,7 @@ module.exports.uploadCreateCardFile = async (req, res) => {
 
       let hasData = false;
       let createdCards = [];
+      let existingEmails = [];
 
       for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber++) {
         const row = worksheet.getRow(rowNumber);
@@ -1527,10 +1521,10 @@ module.exports.uploadCreateCardFile = async (req, res) => {
               let profile_picture = process.env.DEFAULT_USER_PROFILE_PIC;
               let created_by = findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
               let s2 = `
-                INSERT INTO digital_cards 
-                  (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number,profile_picture) 
-                VALUES 
-                  ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,$14) 
+                INSERT INTO digital_cards
+                  (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number,profile_picture)
+                VALUES
+                  ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,$14)
                 RETURNING *`;
               console.log(s2, "s22222222222");
               let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, mysql_real_escape_string(first_name), mysql_real_escape_string(last_name), mysql_real_escape_string(user_email.toLowerCase()), mysql_real_escape_string(designation), databaseLinkQR, "user", card_link, null, mysql_real_escape_string(company_ref), contact_number, profile_picture]);
@@ -1554,13 +1548,17 @@ module.exports.uploadCreateCardFile = async (req, res) => {
               return handleSWRError(res);
             }
           } else {
-            return handleResponse(res, 400, false, `Card Creation Failed as email ${user_email} already exists in the database`);
+            existingEmails.push(user_email);
           }
         }
       }
 
       if (!hasData) {
         return res.status(400).json({ success: false, message: 'Uploaded file is empty' });
+      }
+
+      if (existingEmails.length > 0) {
+        return handleResponse(res, 400, false, `Card Creation Failed as these emails already exist in the database: ${existingEmails.join(', ')}`);
       }
 
       await connection.query("COMMIT");
@@ -1573,7 +1571,6 @@ module.exports.uploadCreateCardFile = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 }
-
 
 
 
