@@ -1449,6 +1449,128 @@ module.exports.qrCodeList = async (req, res) => {
 //   }
 // }
 
+// module.exports.uploadCreateCardFile = async (req, res) => {
+//   try {
+//     let { id } = req.user;
+//     await connection.query("BEGIN");
+
+//     let s1 = dbScript(db_sql["Q16"], { var1: id });
+//     let findCompanyAdmin = await connection.query(s1);
+
+//     if (findCompanyAdmin.rowCount > 0) {
+//       if (!req.file) {
+//         return res.status(400).json({ success: false, message: 'No file uploaded' });
+//       }
+
+//       let { path } = req.file;
+//       const workbook = new ExcelJS.Workbook();
+//       await workbook.xlsx.readFile(path);
+//       const worksheet = workbook.getWorksheet(1);
+
+//       let hasData = false;
+//       let createdCards = [];
+//       let existingEmails = [];
+
+//       for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber++) {
+//         const row = worksheet.getRow(rowNumber);
+//         if (rowNumber !== 1) {
+//           hasData = true;
+//           let [, first_name, last_name, user_email, designation, contact_number] = row.values;
+//           console.log(first_name, last_name, user_email, designation, contact_number);
+//           function isValidEmail(email) {
+//             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//             return emailRegex.test(email);
+//           }
+
+//           let isValid = isValidEmail(user_email)
+//           if (!isValid) {
+//             handleResponse(res, 400, false, "Invalid Email address");
+//             break;
+//           }
+
+//           let s0 = dbScript(db_sql["Q34"], { var1: mysql_real_escape_string(user_email.toLowerCase()), });
+//           let checkEmailInDC = await connection.query(s0);
+//           if (checkEmailInDC.rowCount === 0) {
+//             let usedCards = findCompanyAdmin.rows[0].used_cards;
+//             let maxCards = findCompanyAdmin.rows[0].max_cards;
+//             if (usedCards >= maxCards) {
+//               return handleResponse(res, 400, false, "Maximum cards limit reached for this company");
+//             }
+//             path = require("path");
+//             let companyName = formatCompanyName(findCompanyAdmin.rows[0].company_name);
+//             companyName = companyName.toLowerCase();
+//             console.log(companyName, "Company Name");
+//             let company_ref = companyName;
+//             let card_ref = randomstring.generate({ length: 5, charset: "alphanumeric", });
+//             card_ref = card_ref.toLowerCase();
+//             console.log(card_ref, "card_refff");
+//             let qrCodeLink = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`;
+//             console.log(qrCodeLink, "QRLink");
+//             let databaseLinkQR = `${process.env.DATABASE_LINK_FOR_QR}/${companyName}/${card_ref}.png`;
+//             console.log(databaseLinkQR, "databaselink");
+//             let qrCodeDirectory = path.join(__dirname, "../../", "./uploads", "qrCode", companyName);
+//             console.log(qrCodeDirectory, "directory");
+//             let qrCodeFileName = `${card_ref}.png`;
+//             let card_link = `${process.env.LINK_OF_DIGITAL_CARD}/${companyName}/${card_ref}`;
+
+//             fs.mkdirSync(qrCodeDirectory, { recursive: true });
+
+//             let qrSuccess = await generateQRCode(qrCodeLink, qrCodeDirectory, qrCodeFileName);
+//             if (qrSuccess) {
+//               // let cover_pic = process.env.DEFAULT_CARD_COVER_PIC;
+//               let profile_picture = process.env.DEFAULT_USER_PROFILE_PIC;
+//               let created_by = findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
+//               let s2 = `
+//                 INSERT INTO digital_cards
+//                   (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number,profile_picture)
+//                 VALUES
+//                   ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,$14)
+//                 RETURNING *`;
+//               let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, mysql_real_escape_string(first_name), mysql_real_escape_string(last_name), mysql_real_escape_string(user_email.toLowerCase()), mysql_real_escape_string(designation), databaseLinkQR, "user", card_link, null, mysql_real_escape_string(company_ref), contact_number, profile_picture]);
+
+//               if (insertData.rowCount > 0) {
+//                 let s4 = dbScript(db_sql["Q20"], { var1: Number(usedCards) + 1, var2: findCompanyAdmin.rows[0].id, });
+//                 let updateCardCount = await connection.query(s4);
+//                 if (updateCardCount.rowCount > 0) {
+//                   createdCards.push(...insertData.rows);
+//                 } else {
+//                   await connection.query("ROLLBACK");
+//                   return handleSWRError(res);
+//                 }
+//               } else {
+//                 await connection.query("ROLLBACK");
+//                 return handleSWRError(res);
+//               }
+//             } else {
+//               await connection.query("ROLLBACK");
+//               return handleSWRError(res);
+//             }
+//           } else {
+//             existingEmails.push(user_email);
+//           }
+//         }
+//       }
+
+//       if (!hasData) {
+//         return res.status(400).json({ success: false, message: 'Uploaded file is empty' });
+//       }
+
+//       if (existingEmails.length > 0) {
+//         await connection.query('ROLLBACK')
+//         return handleResponse(res, 400, false, `Card Creation Failed as these emails already exist in the database: ${existingEmails.join(', ')}`);
+//       }
+
+//       await connection.query("COMMIT");
+//       return handleResponse(res, 201, true, "Cards Created Successfully", createdCards);
+//     } else {
+//       return handleResponse(res, 401, false, "Admin not found");
+//     }
+//   } catch (error) {
+//     await connection.query("ROLLBACK");
+//     return handleCatchErrors(res, error);
+//   }
+// }
+
 module.exports.uploadCreateCardFile = async (req, res) => {
   try {
     let { id } = req.user;
@@ -1471,12 +1593,15 @@ module.exports.uploadCreateCardFile = async (req, res) => {
       let createdCards = [];
       let existingEmails = [];
 
+      // Count the total number of cards being inserted
+      let totalNewCards = 0;
+
       for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber++) {
         const row = worksheet.getRow(rowNumber);
         if (rowNumber !== 1) {
           hasData = true;
           let [, first_name, last_name, user_email, designation, contact_number] = row.values;
-          console.log(first_name, last_name, user_email, designation, contact_number);
+
           function isValidEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
@@ -1491,35 +1616,29 @@ module.exports.uploadCreateCardFile = async (req, res) => {
           let s0 = dbScript(db_sql["Q34"], { var1: mysql_real_escape_string(user_email.toLowerCase()), });
           let checkEmailInDC = await connection.query(s0);
           if (checkEmailInDC.rowCount === 0) {
-            let usedCards = findCompanyAdmin.rows[0].used_cards;
-            let maxCards = findCompanyAdmin.rows[0].max_cards;
-            if (usedCards >= maxCards) {
+            totalNewCards++;
+            if (totalNewCards > findCompanyAdmin.rows[0].max_cards - findCompanyAdmin.rows[0].used_cards) {
               return handleResponse(res, 400, false, "Maximum cards limit reached for this company");
             }
+
+            let usedCards = findCompanyAdmin.rows[0].used_cards;
+            let maxCards = findCompanyAdmin.rows[0].max_cards;
             path = require("path");
-            let companyName = formatCompanyName(findCompanyAdmin.rows[0].company_name);
-            companyName = companyName.toLowerCase();
-            console.log(companyName, "Company Name");
+            let companyName = formatCompanyName(findCompanyAdmin.rows[0].company_name).toLowerCase();
             let company_ref = companyName;
-            let card_ref = randomstring.generate({ length: 5, charset: "alphanumeric", });
-            card_ref = card_ref.toLowerCase();
-            console.log(card_ref, "card_refff");
+            let card_ref = randomstring.generate({ length: 5, charset: "alphanumeric" }).toLowerCase();
             let qrCodeLink = `${process.env.LINK_INSIDE_QR_CODE}/${companyName}/${card_ref}`;
-            console.log(qrCodeLink, "QRLink");
             let databaseLinkQR = `${process.env.DATABASE_LINK_FOR_QR}/${companyName}/${card_ref}.png`;
-            console.log(databaseLinkQR, "databaselink");
             let qrCodeDirectory = path.join(__dirname, "../../", "./uploads", "qrCode", companyName);
-            console.log(qrCodeDirectory, "directory");
             let qrCodeFileName = `${card_ref}.png`;
             let card_link = `${process.env.LINK_OF_DIGITAL_CARD}/${companyName}/${card_ref}`;
+            let profile_picture = process.env.DEFAULT_USER_PROFILE_PIC;
+            let created_by = findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
 
             fs.mkdirSync(qrCodeDirectory, { recursive: true });
 
             let qrSuccess = await generateQRCode(qrCodeLink, qrCodeDirectory, qrCodeFileName);
             if (qrSuccess) {
-              // let cover_pic = process.env.DEFAULT_CARD_COVER_PIC;
-              let profile_picture = process.env.DEFAULT_USER_PROFILE_PIC;
-              let created_by = findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
               let s2 = `
                 INSERT INTO digital_cards
                   (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number,profile_picture)
@@ -1570,6 +1689,7 @@ module.exports.uploadCreateCardFile = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 }
+
 
 module.exports.exportCardDetail = async (req, res) => {
   try {
