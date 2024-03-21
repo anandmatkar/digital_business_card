@@ -5,7 +5,7 @@ const db_sql = {
   Q3: `SELECT id,name,email,avatar FROM super_admin WHERE id = '{var1}' AND deleted_at IS NULL`,
   Q4: `UPDATE super_admin SET password = '{var1}' ,updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   Q5: `SELECT * FROM company WHERE company_name = '{var1}' OR company_email = '{var2}' AND deleted_at IS NULL`,
-  Q6: `INSERT INTO company (company_name,company_email,company_contact_number, max_cards, contact_person_name,contact_person_email, company_logo) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}', '{var7}') RETURNING *`,
+  Q6: `INSERT INTO company (company_name,company_email,company_contact_number, max_cards, contact_person_name,contact_person_email, company_logo, cover_pic) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}', '{var7}', '{var8}') RETURNING *`,
   Q7: `SELECT * FROM company WHERE deleted_at IS NULL AND status = '{var1}'`,
   Q8: `SELECT * FROM company WHERE id = '{var1}' AND deleted_at IS NULL`,
   Q9: `INSERT INTO company_admin (first_name, last_name, email, password, mobile_number, company_id, created_by, role, avatar, company_name) VALUES ('{var1}','{var2}','{var3}','{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}','{var10}') RETURNING *`,
@@ -17,6 +17,7 @@ const db_sql = {
                 c.description, 
                 c.company_address, 
                 c.company_logo, 
+                c.cover_pic,
                 c.company_contact_number,
                 c.company_website, 
                 c.status, 
@@ -133,7 +134,7 @@ const db_sql = {
   Q29: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,is_active_for_qr FROM digital_cards WHERE company_id = '{var1}' AND deleted_at IS NULL`,
   Q30: `UPDATE super_admin SET name = '{var1}', email = '{var2}', avatar = '{var3}' WHERE id = '{var4}' AND deleted_at IS NULL RETURNING *`,
   Q31: `SELECT dc.*,
-          c.company_name,c.company_email,c.company_address,c.company_logo,c.company_contact_number,c.company_website,c.location, 
+          c.company_name,c.company_email,c.company_address,c.company_logo,c.company_contact_number,c.company_website,c.location,c.cover_pic, 
           usm.facebook, usm.instagram, usm.extra_link_title, usm.extra_link_url, usm.whatsapp,usm.we_chat,usm.linkedin, usm.twitter,usm.weibo, usm.xiao_hong_shu,usm.telegram,usm.youtube, usm.tiktok, usm.line
         FROM digital_cards dc
           LEFT JOIN company c on c.id = dc.company_id 

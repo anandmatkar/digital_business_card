@@ -450,8 +450,8 @@ module.exports.createCompany = async (req, res) => {
       let checkCompanyAlreadyExists = await connection.query(s2);
       if (checkCompanyAlreadyExists.rowCount == 0) {
         let company_logo = process.env.DEFAULT_COMPANY_LOGO;
-
-        let s3 = dbScript(db_sql["Q6"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: mysql_real_escape_string(company_contact_number), var4: max_cards, var5: mysql_real_escape_string(contact_person_name), var6: mysql_real_escape_string(contact_person_email.toLowerCase()), var7: company_logo, });
+        let cover_pic = process.env.DEFAULT_CARD_COVER_PIC;
+        let s3 = dbScript(db_sql["Q6"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: mysql_real_escape_string(company_contact_number), var4: max_cards, var5: mysql_real_escape_string(contact_person_name), var6: mysql_real_escape_string(contact_person_email.toLowerCase()), var7: company_logo, var8: cover_pic });
         let createCompany = await connection.query(s3);
 
         if (createCompany.rowCount) {
