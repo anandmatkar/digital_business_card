@@ -1526,9 +1526,7 @@ module.exports.uploadCreateCardFile = async (req, res) => {
                 VALUES
                   ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,$14)
                 RETURNING *`;
-              console.log(s2, "s22222222222");
               let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, mysql_real_escape_string(first_name), mysql_real_escape_string(last_name), mysql_real_escape_string(user_email.toLowerCase()), mysql_real_escape_string(designation), databaseLinkQR, "user", card_link, null, mysql_real_escape_string(company_ref), contact_number, profile_picture]);
-              console.log(insertData.rows, "222222222");
 
               if (insertData.rowCount > 0) {
                 let s4 = dbScript(db_sql["Q20"], { var1: Number(usedCards) + 1, var2: findCompanyAdmin.rows[0].id, });
@@ -1558,6 +1556,7 @@ module.exports.uploadCreateCardFile = async (req, res) => {
       }
 
       if (existingEmails.length > 0) {
+        await connection.query('ROLLBACK')
         return handleResponse(res, 400, false, `Card Creation Failed as these emails already exist in the database: ${existingEmails.join(', ')}`);
       }
 
@@ -1568,6 +1567,81 @@ module.exports.uploadCreateCardFile = async (req, res) => {
     }
   } catch (error) {
     await connection.query("ROLLBACK");
+    return handleCatchErrors(res, error);
+  }
+}
+
+// module.exports.exportCardDetail = async (req, res) => {
+//   try {
+//     let { id } = req.user;
+//     await connection.query("BEGIN");
+
+//     let s1 = dbScript(db_sql["Q16"], { var1: id });
+//     let findCompanyAdmin = await connection.query(s1);
+
+//     if (findCompanyAdmin.rowCount > 0) {
+//       let s1 = dbScript(db_sql["Q42"], { var1: id });
+//       let exportDetails = await connection.query(s1);
+//       if (exportDetails.rowCount > 0) {
+//         return handleResponse(res, 200, true, "File Exported", exportDetails.rows);
+//       } else {
+//         return handleResponse(res, 200, false, "No cards Found", []);
+//       }
+//     } else {
+//       return handleResponse(res, 401, false, "Admin not found");
+//     }
+//   } catch (error) {
+//     return handleCatchErrors(res, error);
+//   }
+// }
+
+module.exports.exportCardDetail = async (req, res) => {
+  try {
+    // let { id } = req.user;
+    // console.log(id);
+    await connection.query("BEGIN");
+
+    let s1 = dbScript(db_sql["Q16"], { var1: "249183a9-0fb5-43fd-a11f-8cb269bff2f5" });
+    let findCompanyAdmin = await connection.query(s1);
+
+    if (findCompanyAdmin.rowCount > 0) {
+      let s1 = dbScript(db_sql["Q42"], { var1: "249183a9-0fb5-43fd-a11f-8cb269bff2f5" });
+      let exportDetails = await connection.query(s1);
+      if (exportDetails.rowCount > 0) {
+        // Create a new workbook
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Card Details');
+
+        // Define columns
+        worksheet.columns = [
+          { header: 'First Name', key: 'first_name', width: 15 },
+          { header: 'Last Name', key: 'last_name', width: 15 },
+          { header: 'Email', key: 'user_email', width: 30 },
+          { header: 'Designation', key: 'designation', width: 15 },
+          { header: 'Profile Picture', key: 'profile_picture', width: 50 },
+          { header: 'Card URL', key: 'card_url', width: 50 },
+          { header: 'QR URL', key: 'qr_url', width: 50 },
+        ];
+
+        // Add data rows
+        exportDetails.rows.forEach(row => {
+          worksheet.addRow(row);
+        });
+
+        // Generate Excel buffer
+        const excelBuffer = await workbook.xlsx.writeBuffer();
+
+        // Send Excel file in response
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename="card_details.xlsx"');
+        res.send(excelBuffer);
+      } else {
+        return handleResponse(res, 200, false, "No cards Found", []);
+      }
+    } else {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+  } catch (error) {
     return handleCatchErrors(res, error);
   }
 }

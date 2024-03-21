@@ -191,7 +191,9 @@ const db_sql = {
                     updated_card.contact_number,
                     uml.*`,
   Q40: `SELECT facebook,instagram,twitter,youtube,we_chat,line,telegram,linkedin,xiao_hong_shu, weibo,tiktok, extra_link_title,extra_link_url, company_id FROM user_media_link WHERE company_id = '{var1}' AND deleted_at IS NULL`,
-  Q41: `UPDATE user_media_link SET facebook = '{var1}', instagram = '{var2}', twitter = '{var3}', youtube = '{var4}', linkedin = '{var5}',xiao_hong_shu = '{var6}',tiktok = '{var7}',we_chat = '{var8}',line = '{var9}', telegram = '{var10}', weibo = '{var11}' WHERE company_id = '{var12}' AND deleted_at IS NULL RETURNING *`
+  Q41: `UPDATE user_media_link SET facebook = '{var1}', instagram = '{var2}', twitter = '{var3}', youtube = '{var4}', linkedin = '{var5}',xiao_hong_shu = '{var6}',tiktok = '{var7}',we_chat = '{var8}',line = '{var9}', telegram = '{var10}', weibo = '{var11}' WHERE company_id = '{var12}' AND deleted_at IS NULL RETURNING *`,
+  Q42: `SELECT first_name,last_name,user_email,designation,profile_picture,card_url,qr_url FROM digital_cards WHERE created_by = '{var1}' AND deleted_at IS NULL`,
+
 
 };
 

@@ -30,6 +30,7 @@ router.put("/editCard", verifyTokenForCA, controller.companyAdminController.edit
 router.post("/uploadCardProfilePicture", verifyTokenForCA, uploadCardProfilePic.single("image"), controller.companyAdminController.uploadCardProfilePicture);
 router.post("/uploadCardCoverPicture", verifyTokenForCA, uploadCardCoverePic.single("image"), controller.companyAdminController.uploadCardCoverPicture);
 router.post("/uploadCreateCardFile", verifyTokenForCA, uploadCardFile.single('file'), controller.companyAdminController.uploadCreateCardFile);
+router.get("/exportCardDetail", controller.companyAdminController.exportCardDetail);
 
 /** == company section== */
 router.post("/uploadCompanyLogo", verifyTokenForCA, uploadCompanyLogo.single("image"), controller.companyAdminController.uploadCompanyLogo);
