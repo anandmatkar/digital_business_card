@@ -6,7 +6,7 @@ const db_sql = {
   Q4: `UPDATE super_admin SET password = '{var1}' ,updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   Q5: `SELECT * FROM company WHERE company_name = '{var1}' OR company_email = '{var2}' AND deleted_at IS NULL`,
   Q6: `INSERT INTO company (company_name,company_email,company_contact_number, max_cards, contact_person_name,contact_person_email, company_logo, cover_pic, trial_start_date, trial_end_date) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}', '{var7}', '{var8}', '{var9}', '{var10}') RETURNING *`,
-  Q7: `SELECT * FROM company WHERE deleted_at IS NULL AND status = '{var1}'`,
+  Q7: `SELECT * FROM company WHERE deleted_at IS NULL AND status = '{var1}' ORDER BY created_at DESC;`,
   Q8: `SELECT * FROM company WHERE id = '{var1}' AND deleted_at IS NULL`,
   Q9: `INSERT INTO company_admin (first_name, last_name, email, password, mobile_number, company_id, created_by, role, avatar, company_name) VALUES ('{var1}','{var2}','{var3}','{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}','{var10}') RETURNING *`,
   Q10: `SELECT * FROM company_admin WHERE company_id = '{var1}' AND deleted_at IS NULL`,
