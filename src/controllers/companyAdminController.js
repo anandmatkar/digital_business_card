@@ -1571,60 +1571,6 @@ module.exports.uploadCreateCardFile = async (req, res) => {
   }
 }
 
-
-
-// module.exports.exportCardDetail = async (req, res) => {
-//   try {
-//     let { id } = req.user;
-//     await connection.query("BEGIN");
-
-//     let s1 = dbScript(db_sql["Q16"], { var1: id });
-//     let findCompanyAdmin = await connection.query(s1);
-
-//     if (findCompanyAdmin.rowCount > 0) {
-//       let s1 = dbScript(db_sql["Q42"], { var1: id });
-//       let exportDetails = await connection.query(s1);
-//       if (exportDetails.rowCount > 0) {
-//         // Create a new workbook
-//         const workbook = new ExcelJS.Workbook();
-//         const worksheet = workbook.addWorksheet('Card Details');
-
-//         // Define columns
-//         worksheet.columns = [
-//           { header: 'First Name', key: 'first_name', width: 15 },
-//           { header: 'Last Name', key: 'last_name', width: 15 },
-//           { header: 'Email', key: 'user_email', width: 30 },
-//           { header: 'Designation', key: 'designation', width: 15 },
-//           { header: 'Profile Picture', key: 'profile_picture', width: 50 },
-//           { header: 'Card URL', key: 'card_url', width: 50 },
-//           { header: 'QR URL', key: 'qr_url', width: 50 },
-//         ];
-
-//         // Add data rows
-//         exportDetails.rows.forEach(row => {
-//           worksheet.addRow(row);
-//         });
-
-//         // Generate Excel buffer
-//         const excelBuffer = await workbook.xlsx.writeBuffer();
-
-//         // Send Excel file in response with proper headers
-//         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-//         res.setHeader('Content-Disposition', 'attachment; filename="card_details.xlsx"');
-//         res.send(excelBuffer);
-//       } else {
-//         return handleResponse(res, 200, false, "No cards Found", []);
-//       }
-//     } else {
-//       return handleResponse(res, 401, false, "Admin not found");
-//     }
-//   } catch (error) {
-//     return handleCatchErrors(res, error);
-//   }
-// }
-
-
-
 module.exports.exportCardDetail = async (req, res) => {
   try {
     let { id } = req.user;
@@ -1654,15 +1600,17 @@ module.exports.exportCardDetail = async (req, res) => {
           worksheet.addRow(row);
         });
 
-        const fileName = 'card_details.xlsx';
+        // const fileName = 'card_details.xlsx';
+        const timestamp = new Date().toISOString().replace(/:/g, '-');
+        const fileName = `card_details_${timestamp}.xlsx`;
         const filePath = path.join(__dirname, '../../uploads/cardDetails', fileName);
         await workbook.xlsx.writeFile(filePath);
 
-        // Constructing the URL
         const baseUrl = req.protocol + '://' + req.get('host');
         const fileUrl = `${baseUrl}/uploads/cardDetails/${fileName}`;
 
-        // Sending the URL in response
+        // const fileUrl = `${baseUrl}/cardDetails/${fileName}`;
+
         res.status(200).json({ fileUrl });
       } else {
         return handleResponse(res, 200, false, "No cards Found", []);
@@ -1674,5 +1622,7 @@ module.exports.exportCardDetail = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 }
+
+
 
 
