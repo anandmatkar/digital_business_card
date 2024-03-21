@@ -123,17 +123,17 @@ const db_sql = {
           LEFT JOIN company c on c.id = dc.company_id 
           LEFT JOIN user_media_link usm ON usm.company_id = c.id
         WHERE dc.company_ref = '{var1}' AND dc.card_reference = '{var2}' AND dc.is_deactivated = '{var3}' 
-          AND dc.deleted_at IS NULL AND c.deleted_at IS NULL AND c.status = 'activated' ORDER BY dc.created_at DESC;`,
+          AND dc.deleted_at IS NULL AND c.deleted_at IS NULL AND c.status = 'activated'`,
   Q20: `UPDATE company SET used_cards = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   Q21: `UPDATE digital_cards SET is_active_for_qr = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   Q22: `UPDATE digital_cards SET is_deactivated = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
-  Q23: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,is_active_for_qr FROM digital_cards WHERE created_by = '{var1}' AND deleted_at IS NULL`,
+  Q23: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,is_active_for_qr FROM digital_cards WHERE created_by = '{var1}' AND deleted_at IS NULL ORDER BY created_at DESC;`,
   Q24: `UPDATE digital_cards SET is_active_for_qr = '{var1}' WHERE id IN ('{var2}') AND deleted_at IS NULL RETURNING *`,
   Q25: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,is_active_for_qr FROM digital_cards WHERE id = '{var1}' AND deleted_at IS NULL`,
   Q26: `UPDATE digital_cards SET first_name = '{var1}', last_name = '{var2}',user_email = '{var3}',designation = '{var4}',profile_picture = '{var5}', bio = '{var6}', cover_pic = '{var7}', contact_number = '{var8}' WHERE id = '{var9}' AND deleted_at IS NULL RETURNING *`,
   Q27: `UPDATE company SET company_name = '{var1}', company_email = '{var2}',description = '{var3}', company_address = '{var4}', company_logo = '{var5}', company_website = '{var6}', location = '{var7}', latitude = '{var8}', longitude = '{var9}', company_contact_number = '{var10}', product_service = '{var11}' WHERE admin_id = '{var12}' AND id = '{var13}' AND deleted_at IS NULL RETURNING *`,
   Q28: `UPDATE company_admin SET first_name = '{var1}' , last_name = '{var2}', email = '{var3}', phone_number = '{var4}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
-  Q29: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,is_active_for_qr FROM digital_cards WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+  Q29: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,is_active_for_qr FROM digital_cards WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at DESC;`,
   Q30: `UPDATE super_admin SET name = '{var1}', email = '{var2}', avatar = '{var3}' WHERE id = '{var4}' AND deleted_at IS NULL RETURNING *`,
   Q31: `SELECT dc.*,
           c.company_name,c.company_email,c.company_address,c.company_logo,c.company_contact_number,c.company_website,c.location,c.cover_pic, 
