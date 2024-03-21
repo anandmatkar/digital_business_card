@@ -457,41 +457,42 @@ module.exports.editCompanyDetails = async (req, res) => {
       if (findCompanyAdmin.rows[0].id !== company_id) {
         return handleResponse(res, 400, false, "Provide Valid Company Id");
       }
+      if (product_service && product_service.trim() !== '') {
+        async function handleImage(product_service) {
+          const imgRegex = /<img[^>]+src="([^">]+)"/g;
+          let counter = 1;
 
-      async function handleImage(product_service) {
-        const imgRegex = /<img[^>]+src="([^">]+)"/g;
-        let counter = 1;
+          product_service = product_service.replace(
+            imgRegex,
+            (match, imagePath) => {
+              if (imagePath.startsWith("https://midin.app/uploads/productServiceImage/")) {
+                return match;
+              } else if (imagePath.startsWith("uploads/productServiceImage/")) {
+                return `<img src="https://midin.app/${imagePath}"`;
+              } else if (imagePath.startsWith("../../uploads")) {
+                const correctedPath = imagePath.replace("../..", "https://midin.app");
+                return `<img src="${correctedPath}"`;
+              } else if (imagePath.startsWith("data:image")) {
+                const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
 
-        product_service = product_service.replace(
-          imgRegex,
-          (match, imagePath) => {
-            if (imagePath.startsWith("https://midin.app/uploads/productServiceImage/")) {
-              return match;
-            } else if (imagePath.startsWith("uploads/productServiceImage/")) {
-              return `<img src="https://midin.app/${imagePath}"`;
-            } else if (imagePath.startsWith("../../uploads")) {
-              const correctedPath = imagePath.replace("../..", "https://midin.app");
-              return `<img src="${correctedPath}"`;
-            } else if (imagePath.startsWith("data:image")) {
-              const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
+                const filename = Date.now() + "-" + counter++ + "." + format;
 
-              const filename = Date.now() + "-" + counter++ + "." + format;
+                const filePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
+                fs.writeFileSync(filePath, data, 'base64');
 
-              const filePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
-              fs.writeFileSync(filePath, data, 'base64');
-
-              return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
-            } else {
-              return match;
+                return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+              } else {
+                return match;
+              }
             }
-          }
-        );
+          );
 
-        return product_service;
+          return product_service;
+        }
+        product_service = await handleImage(product_service);
       }
-
-      product_service = await handleImage(product_service);
       product_service = JSON.stringify(product_service);
+      console.log(product_service);
       let s2 = `
   UPDATE company 
   SET 
