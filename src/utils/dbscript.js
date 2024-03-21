@@ -123,7 +123,7 @@ const db_sql = {
           LEFT JOIN company c on c.id = dc.company_id 
           LEFT JOIN user_media_link usm ON usm.company_id = c.id
         WHERE dc.company_ref = '{var1}' AND dc.card_reference = '{var2}' AND dc.is_deactivated = '{var3}' 
-          AND dc.deleted_at IS NULL AND c.deleted_at IS NULL AND c.status = 'activated'`,
+          AND dc.deleted_at IS NULL AND c.deleted_at IS NULL AND c.status = 'activated' ORDER BY dc.created_at DESC;`,
   Q20: `UPDATE company SET used_cards = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   Q21: `UPDATE digital_cards SET is_active_for_qr = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   Q22: `UPDATE digital_cards SET is_deactivated = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
