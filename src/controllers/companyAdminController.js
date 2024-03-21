@@ -1597,15 +1597,14 @@ module.exports.uploadCreateCardFile = async (req, res) => {
 
 module.exports.exportCardDetail = async (req, res) => {
   try {
-    // let { id } = req.user;
-    // console.log(id);
+    let { id } = req.user;
     await connection.query("BEGIN");
 
-    let s1 = dbScript(db_sql["Q16"], { var1: "249183a9-0fb5-43fd-a11f-8cb269bff2f5" });
+    let s1 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
 
     if (findCompanyAdmin.rowCount > 0) {
-      let s1 = dbScript(db_sql["Q42"], { var1: "249183a9-0fb5-43fd-a11f-8cb269bff2f5" });
+      let s1 = dbScript(db_sql["Q42"], { var1: id });
       let exportDetails = await connection.query(s1);
       if (exportDetails.rowCount > 0) {
         // Create a new workbook
