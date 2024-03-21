@@ -1606,7 +1606,7 @@ module.exports.exportCardDetail = async (req, res) => {
         const filePath = path.join(__dirname, '../../uploads/cardDetails', fileName);
         await workbook.xlsx.writeFile(filePath);
 
-        const baseUrl = req.protocol + '://' + req.get('host');
+        const baseUrl = "https://midin.app";
         const fileUrl = `${baseUrl}/uploads/cardDetails/${fileName}`;
 
         // const fileUrl = `${baseUrl}/cardDetails/${fileName}`;
