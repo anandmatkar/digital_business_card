@@ -598,7 +598,7 @@ module.exports.editSocialMedia = async (req, res) => {
   try {
     let { id } = req.user;
 
-    let { company_id, facebook, instagram, linkedin, youtube, xiao_hong_shu, tiktok, wechat, line, telegram, weibo, twitter } = req.body;
+    let { company_id, facebook, instagram, linkedin, youtube, xiao_hong_shu, tiktok, we_chat, line, telegram, weibo, twitter } = req.body;
     await connection.query("BEGIN");
 
     let s1 = dbScript(db_sql["Q16"], { var1: id });
@@ -607,7 +607,7 @@ module.exports.editSocialMedia = async (req, res) => {
       if (findCompanyAdmin.rows[0].id !== company_id) {
         return handleResponse(res, 401, false, "You are unauthorized to change this data.");
       }
-      let s2 = dbScript(db_sql["Q41"], { var1: facebook, var2: instagram, var3: twitter, var4: youtube, var5: linkedin, var6: xiao_hong_shu, var7: tiktok, var8: wechat, var9: line, var10: telegram, var11: weibo, var12: company_id });
+      let s2 = dbScript(db_sql["Q41"], { var1: facebook, var2: instagram, var3: twitter, var4: youtube, var5: linkedin, var6: xiao_hong_shu, var7: tiktok, var8: we_chat, var9: line, var10: telegram, var11: weibo, var12: company_id });
       let updateSocialMedia = await connection.query(s2);
       if (updateSocialMedia.rowCount > 0) {
         await connection.query("COMMIT")

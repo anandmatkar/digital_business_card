@@ -2,7 +2,6 @@ const nodemailer = require("nodemailer");
 const { forgetPasswordFunction } = require("../templates/forgetPassword");
 
 module.exports.forgetPassword = async (email, link, userName) => {
-    console.log(email, link, userName, "forget password mail");
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
@@ -29,7 +28,6 @@ module.exports.forgetPassword = async (email, link, userName) => {
             pass: smtpPassword
         }
     });
-    console.log(transporter, "trna");
 
     let mailOptions = {
         from: senderAddress,
@@ -41,7 +39,6 @@ module.exports.forgetPassword = async (email, link, userName) => {
         html: resetPass,
         headers: {}
     };
-    console.log(mailOptions, "mailOptions");
     // Send the email.
     let info = await transporter.sendMail(mailOptions)
     console.log("Message sent! Message ID: ", info.messageId);
