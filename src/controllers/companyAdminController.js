@@ -425,7 +425,8 @@ module.exports.editCompanyDetails = async (req, res) => {
       latitude,
       longitude,
       company_contact_number,
-      product_service
+      product_service,
+      cover_pic
     } = req.body;
 
     if (
@@ -504,18 +505,19 @@ module.exports.editCompanyDetails = async (req, res) => {
     latitude = $8,
     longitude = $9,
     company_contact_number = $10,
-    product_service = $11
+    product_service = $11,
+    cover_pic = $12
   WHERE 
-    admin_id = $12 
-    AND id = $13 
+    admin_id = $13 
+    AND id = $14
     AND deleted_at IS NULL 
   RETURNING *`;
 
       let updateCompanyDetails = await connection.query(s2, [
-        company_name,
-        company_email.toLowerCase(),
-        description,
-        company_address,
+        mysql_real_escape_string(company_name),
+        mysql_real_escape_string(company_email.toLowerCase()),
+        (description),
+        (company_address),
         company_logo,
         company_website,
         location,
@@ -523,6 +525,7 @@ module.exports.editCompanyDetails = async (req, res) => {
         longitude,
         company_contact_number,
         product_service,
+        cover_pic,
         id,
         company_id
       ]);
@@ -777,7 +780,6 @@ module.exports.cardLists = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 };
-
 //card details for admin
 // module.exports.cardDetailsForCA = async (req, res) => {
 //   try {
@@ -872,7 +874,6 @@ module.exports.cardDetailsForCA = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 };
-
 
 module.exports.activateSingleCardForQr = async (req, res) => {
   try {
