@@ -11,6 +11,7 @@ const {
 const bcrypt = require("bcrypt");
 const { card } = require("./companyAdminController");
 const { forgetPassword } = require("../utils/sendMail");
+const moment = require('moment');
 
 /*   Auth section  */
 
@@ -422,6 +423,7 @@ module.exports.createCompany = async (req, res) => {
       max_cards,
       contact_person_name,
       contact_person_email,
+      trial_duration
     } = req.body;
     if (
       !company_name ||
@@ -429,11 +431,20 @@ module.exports.createCompany = async (req, res) => {
       !company_contact_number ||
       !max_cards ||
       !contact_person_name ||
-      !contact_person_email
+      !contact_person_email ||
+      !trial_duration
     ) {
       return handleResponse(res, 400, false, "Please provide all the Fields.");
     }
+    if (trial_duration != 1 && trial_duration != 6 && trial_duration != 12 && trial_duration != 24 && trial_duration != 36) {
+      return handleResponse(res, 400, false, "Invalid trial duration");
+    }
 
+    // Calculate end date based on trial duration
+    let startDate = new Date().toISOString();
+    let endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + parseInt(trial_duration));
+    let endDateISO = endDate.toISOString();
     let errors = await superAdminValidation.createCompanyValidation(req, res);
     if (!errors.isEmpty()) {
       const firstError = errors.array()[0].msg;
@@ -451,7 +462,7 @@ module.exports.createCompany = async (req, res) => {
       if (checkCompanyAlreadyExists.rowCount == 0) {
         let company_logo = process.env.DEFAULT_COMPANY_LOGO;
         let cover_pic = process.env.DEFAULT_CARD_COVER_PIC;
-        let s3 = dbScript(db_sql["Q6"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: mysql_real_escape_string(company_contact_number), var4: max_cards, var5: mysql_real_escape_string(contact_person_name), var6: mysql_real_escape_string(contact_person_email.toLowerCase()), var7: company_logo, var8: cover_pic });
+        let s3 = dbScript(db_sql["Q6"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: mysql_real_escape_string(company_contact_number), var4: max_cards, var5: mysql_real_escape_string(contact_person_name), var6: mysql_real_escape_string(contact_person_email.toLowerCase()), var7: company_logo, var8: cover_pic, var9: startDate, var10: endDateISO });
         let createCompany = await connection.query(s3);
 
         if (createCompany.rowCount) {
@@ -494,13 +505,15 @@ module.exports.companyList = async (req, res) => {
       let s2 = dbScript(db_sql["Q7"], { var1: status });
       let getCompanyList = await connection.query(s2);
       if (getCompanyList.rowCount > 0) {
-        return handleResponse(
-          res,
-          200,
-          true,
-          "Company Lists",
-          getCompanyList.rows
-        );
+        // Calculate remaining duration for each company
+        getCompanyList.rows.forEach(company => {
+          const trialEndDate = moment(company.trial_end_date);
+          const currentDate = moment();
+          const remainingDuration = trialEndDate.diff(currentDate, 'days');
+          company.remaining_duration = remainingDuration;
+        });
+
+        return handleResponse(res, 200, true, "Company Lists", getCompanyList.rows);
       } else {
         return handleResponse(res, 200, false, "Empty Company Lists", []);
       }
@@ -511,6 +524,7 @@ module.exports.companyList = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 };
+
 //company with company admin details
 module.exports.companyDetails = async (req, res) => {
   try {
