@@ -506,12 +506,21 @@ module.exports.companyList = async (req, res) => {
       let getCompanyList = await connection.query(s2);
       if (getCompanyList.rowCount > 0) {
         // Calculate remaining duration for each company
+        // getCompanyList.rows.forEach(company => {
+        //   const trialEndDate = moment(company.trial_end_date);
+        //   const currentDate = moment();
+        //   const remainingDuration = trialEndDate.diff(currentDate, 'days');
+        //   company.remaining_duration = remainingDuration;
+        // });
+
         getCompanyList.rows.forEach(company => {
-          const trialEndDate = moment(company.trial_end_date);
-          const currentDate = moment();
+          const trialEndDate = moment(company.trial_end_date).startOf('day');
+          const currentDate = moment().startOf('day');
           const remainingDuration = trialEndDate.diff(currentDate, 'days');
+
           company.remaining_duration = remainingDuration;
         });
+
 
         return handleResponse(res, 200, true, "Company Lists", getCompanyList.rows);
       } else {
