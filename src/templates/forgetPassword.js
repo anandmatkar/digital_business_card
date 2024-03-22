@@ -51,9 +51,9 @@ module.exports.forgetPasswordFunction = function (link, email, userName) {
                                             <br>
                                             Cheers,
                                             <br/>
-                                            Digital Card Team <br>
+                                            Midin Crew <br>
 
-                                            <h5>If you have any questions. Please email us at <a style="color:#1bb2cc;"><u>digitalcard@contactus.com</u></a>.</h5> 
+                                            <h5>If you have any questions. Please email us at <a style="color:#1bb2cc;"><u>midinapp@gmail.com</u></a>.</h5> 
                                             </p>
                                             
                                         </td>

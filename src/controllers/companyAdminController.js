@@ -1003,21 +1003,28 @@ module.exports.card = async (req, res) => {
     });
     let findCardDetails = await connection.query(s1);
     if (findCardDetails.rowCount > 0) {
-      if (findCardDetails.rows[0].product_service) {
-        findCardDetails.rows[0].product_service = unescape(JSON.parse(findCardDetails.rows[0].product_service))
-      }
-      if (findCardDetails.rows[0].bio) {
-        findCardDetails.rows[0].bio = unescape(JSON.parse(findCardDetails.rows[0].bio))
-      }
-      findCardDetails.rows[0].cover_pic = findCardDetails.rows[0].cover_pic || process.env.DEFAULT_CARD_COVER_PIC;
+      if (findCardDetails.rows[0].trial_end_date > new Date().toISOString()) {
+        console.log(findCardDetails.rows[0].trial_end_date, "findCardDetails.rows[0].trial_end_date ");
+        console.log(new Date().toISOString(), "new Date().toISOString() ");
 
-      return handleResponse(
-        res,
-        200,
-        true,
-        "Card Details",
-        findCardDetails.rows[0]
-      );
+        if (findCardDetails.rows[0].product_service) {
+          findCardDetails.rows[0].product_service = unescape(JSON.parse(findCardDetails.rows[0].product_service))
+        }
+        if (findCardDetails.rows[0].bio) {
+          findCardDetails.rows[0].bio = unescape(JSON.parse(findCardDetails.rows[0].bio))
+        }
+        findCardDetails.rows[0].cover_pic = findCardDetails.rows[0].cover_pic || process.env.DEFAULT_CARD_COVER_PIC;
+
+        return handleResponse(
+          res,
+          200,
+          true,
+          "Card Details",
+          findCardDetails.rows[0]
+        );
+      } else {
+        return handleResponse(res, 402, false, "Subscription Expired", {});
+      }
     } else {
       return handleResponse(res, 404, false, "No cards Found", {});
     }
