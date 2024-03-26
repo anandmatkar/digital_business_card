@@ -800,6 +800,43 @@ module.exports.deactivateCompanyAndCompanyAdmin = async (req, res) => {
   }
 };
 
+module.exports.deleteCompany = async (req, res) => {
+  try {
+    let { id } = req.user;
+    let { company_id } = req.query;
+
+    let isValidCId = isValidUUID(company_id);
+    if (!isValidCId) {
+      return handleResponse(res, 400, false, "Invalid Company Id");
+    }
+    await connection.query("BEGIN");
+    let s1 = dbScript(db_sql["Q3"], { var1: id });
+    let findSuperAdmin = await connection.query(s1);
+    if (findSuperAdmin.rowCount > 0) {
+      let s2 = dbScript(db_sql["Q13"], { var1: status, var2: company_id });
+      let deactivateCompany = await connection.query(s2);
+
+      let s3 = dbScript(db_sql["Q15"], {
+        var1: status == "deactivated" ? false : true,
+        var2: company_id,
+      });
+      let deactivateCompanyAdmin = await connection.query(s3);
+      if (deactivateCompany.rowCount > 0) {
+        await connection.query("COMMIT");
+        return handleResponse(res, 200, true, `Company ${status} successfully`);
+      } else {
+        await connection.query("ROLLBACK");
+        return handleSWRError(res);
+      }
+    } else {
+      return handleResponse(res, 401, false, "Super Admin Not Found");
+    }
+  } catch (error) {
+    await connection.query("ROLLBACK");
+    return handleCatchErrors(res, error);
+  }
+};
+
 module.exports.editCompanyAdmin = async (req, res) => {
   try {
     let { id } = req.user;

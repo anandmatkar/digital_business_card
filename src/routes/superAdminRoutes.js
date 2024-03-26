@@ -93,4 +93,10 @@ router.post(
   controller.superAdminController.uploadCompanyLogoForSA
 );
 
+router.put(
+  "/deleteCompany",
+  verifyTokenForSA,
+  controller.superAdminController.deleteCompany
+);
+
 module.exports = router;
