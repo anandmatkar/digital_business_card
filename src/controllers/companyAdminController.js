@@ -1153,7 +1153,7 @@ module.exports.editCard = async (req, res) => {
     bio = $6,
     cover_pic = $7,
     contact_number = $8,
-    personal_whatsapp = $9,
+    personal_whatsapp = $9
   WHERE
     id = $10
     AND deleted_at IS NULL
