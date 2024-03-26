@@ -737,7 +737,7 @@ module.exports.createCard = async (req, res) => {
             ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) 
           RETURNING *`;
 
-          let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, first_name, last_name, user_email.toLowerCase(), designation, bio ? bio : null, databaseLinkQR, "user", cover_pic, profile_picture, card_link, null, company_ref, contact_number]);
+          let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, first_name, last_name, user_email.toLowerCase(), designation, bio ? bio : null, databaseLinkQR, "user", cover_pic, profile_picture, card_link, null, company_ref, contact_number, personal_whatsapp]);
 
           if (insertData.rowCount > 0) {
             let s4 = dbScript(db_sql["Q20"], {
