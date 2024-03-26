@@ -630,7 +630,7 @@ module.exports.editSocialMedia = async (req, res) => {
 module.exports.createCard = async (req, res) => {
   try {
     let { id } = req.user;
-    let { first_name, last_name, user_email, designation, bio, cover_pic, profile_picture, contact_number,
+    let { first_name, last_name, user_email, designation, bio, cover_pic, profile_picture, contact_number, personal_whatsapp
     } = req.body;
     await connection.query("BEGIN");
 
@@ -732,9 +732,9 @@ module.exports.createCard = async (req, res) => {
           }
           let s2 = `
           INSERT INTO digital_cards 
-            (company_id, created_by, card_reference, first_name, last_name, user_email, designation, bio, qr_url, user_type, cover_pic, profile_picture, card_url, vcf_card_url, company_ref, contact_number) 
+            (company_id, created_by, card_reference, first_name, last_name, user_email, designation, bio, qr_url, user_type, cover_pic, profile_picture, card_url, vcf_card_url, company_ref, contact_number,personal_whatsapp) 
           VALUES 
-            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) 
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) 
           RETURNING *`;
 
           let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, first_name, last_name, user_email.toLowerCase(), designation, bio ? bio : null, databaseLinkQR, "user", cover_pic, profile_picture, card_link, null, company_ref, contact_number]);
@@ -1057,6 +1057,7 @@ module.exports.editCard = async (req, res) => {
       cover_pic,
       profile_picture,
       contact_number,
+      personal_whatsapp
 
     } = req.body;
 
@@ -1151,9 +1152,10 @@ module.exports.editCard = async (req, res) => {
     profile_picture = $5,
     bio = $6,
     cover_pic = $7,
-    contact_number = $8
+    contact_number = $8,
+    personal_whatsapp = $9,
   WHERE
-    id = $9
+    id = $10
     AND deleted_at IS NULL
   RETURNING *`;
 
@@ -1166,6 +1168,7 @@ module.exports.editCard = async (req, res) => {
           bio ? bio : null,
           cover_pic,
           contact_number,
+          personal_whatsapp,
           card_id
         ]);
 
