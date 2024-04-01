@@ -7,7 +7,8 @@ const storage1 = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const ext = file.mimetype.split('/')[1];
-        const fileName = `${file.originalname}${Date.now()}.${ext}`
+        const originalName = file.originalname.replace(/\s+/g, '-');
+        const fileName = `${originalName}${Date.now()}.${ext}`
         cb(null, fileName)
     }
 })
@@ -21,8 +22,9 @@ const storage2 = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const ext = file.mimetype.split('/')[1];
-        const fileName = `${file.originalname}${Date.now()}.${ext}`
-        cb(null, fileName)
+        const originalName = file.originalname.replace(/\s+/g, '-'); // Replace spaces with hyphens
+        const fileName = `${originalName}${Date.now()}.${ext}`;
+        cb(null, fileName);
     }
 })
 const uploadCardCoverePic = multer({
@@ -35,7 +37,8 @@ const storage3 = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const ext = file.mimetype.split('/')[1];
-        const fileName = `${file.originalname}${Date.now()}.${ext}`
+        const originalName = file.originalname.replace(/\s+/g, '-');
+        const fileName = `${originalName}${Date.now()}.${ext}`
         cb(null, fileName)
     }
 })
@@ -49,7 +52,8 @@ const storage4 = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const ext = file.mimetype.split('/')[1];
-        const fileName = `${file.originalname}${Date.now()}.${ext}`
+        const originalName = file.originalname.replace(/\s+/g, '-');
+        const fileName = `${originalName}${Date.now()}.${ext}`
         cb(null, fileName)
     }
 })
@@ -63,7 +67,8 @@ const storage5 = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const ext = file.mimetype.split('/')[1];
-        const fileName = `${file.originalname}${Date.now()}.${ext}`
+        const originalName = file.originalname.replace(/\s+/g, '-');
+        const fileName = `${originalName}${Date.now()}.${ext}`
         cb(null, fileName)
     }
 })
@@ -77,7 +82,8 @@ const storage6 = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const ext = file.mimetype.split('/')[1];
-        const fileName = `${file.originalname}${Date.now()}.${ext}`
+        const originalName = file.originalname.replace(/\s+/g, '-');
+        const fileName = `${originalName}${Date.now()}.${ext}`
         cb(null, fileName)
     }
 })
