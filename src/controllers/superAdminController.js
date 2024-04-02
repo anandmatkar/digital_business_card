@@ -813,17 +813,14 @@ module.exports.deleteCompany = async (req, res) => {
     let s1 = dbScript(db_sql["Q3"], { var1: id });
     let findSuperAdmin = await connection.query(s1);
     if (findSuperAdmin.rowCount > 0) {
-      let s2 = dbScript(db_sql["Q13"], { var1: status, var2: company_id });
-      let deactivateCompany = await connection.query(s2);
-
-      let s3 = dbScript(db_sql["Q15"], {
-        var1: status == "deactivated" ? false : true,
-        var2: company_id,
-      });
-      let deactivateCompanyAdmin = await connection.query(s3);
-      if (deactivateCompany.rowCount > 0) {
+      let _dt = new Date().toISOString()
+      let s2 = dbScript(db_sql["Q43"], { var1: _dt, var2: company_id });
+      let deleteCompany = await connection.query(s2);
+      if (deleteCompany.rowCount > 0) {
+        let s3 = dbScript(db_sql["Q44"], { var1: _dt, var2: company_id });
+        let deleteCompanyAdmin = await connection.query(s3);
         await connection.query("COMMIT");
-        return handleResponse(res, 200, true, `Company ${status} successfully`);
+        return handleResponse(res, 200, true, `Company Deleted Successfully.`);
       } else {
         await connection.query("ROLLBACK");
         return handleSWRError(res);
