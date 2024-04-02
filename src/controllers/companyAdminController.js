@@ -1,5 +1,6 @@
 const connection = require("../config/database");
 const { body, validationResult } = require('express-validator');
+const qrImage = require("qr-image");
 const {
   issueJWT,
   verifyPassResTokenCA,
@@ -683,23 +684,28 @@ module.exports.createCard = async (req, res) => {
 
         fs.mkdirSync(qrCodeDirectory, { recursive: true });
 
-        const qrCodeOptions = {
-          width: 500, // Increase the width of the QR code
-          height: 500, // Increase the height of the QR code
-          margin: 2, // You can adjust the margin as needed
-          color: {
-            dark: "#000000", // QR code color
-            light: "#ffffff", // Background color
-          },
-        };
+        // const qrCodeOptions = {
+        //   width: 500, // Increase the width of the QR code
+        //   height: 500, // Increase the height of the QR code
+        //   margin: 2, // You can adjust the margin as needed
+        //   color: {
+        //     dark: "#000000", // QR code color
+        //     light: "#ffffff", // Background color
+        //   },
+        // };
 
-        let qrSuccess = await generateQRCode(
-          qrCodeLink,
-          qrCodeDirectory,
-          qrCodeFileName,
-          qrCodeOptions
-        );
-        if (qrSuccess) {
+        // let qrSuccess = await generateQRCode(
+        //   qrCodeLink,
+        //   qrCodeDirectory,
+        //   qrCodeFileName,
+        //   qrCodeOptions
+        // );
+
+        const qrCodeImage = qrImage.imageSync(qrCodeLink, { type: "png", size: 256 });
+        console.log(qrCodeImage.length, "qrsucesss");
+        // Save QR code to file
+        fs.writeFileSync(path.join(qrCodeDirectory, qrCodeFileName), qrCodeImage, "binary");
+        if (qrCodeImage.length > 0) {
           cover_pic = cover_pic ? cover_pic : process.env.DEFAULT_CARD_COVER_PIC;
           profile_picture = profile_picture ? profile_picture : process.env.DEFAULT_USER_PROFILE_PIC;
           let created_by = findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
@@ -1474,12 +1480,12 @@ module.exports.qrCodeList = async (req, res) => {
 module.exports.uploadCreateCardFile = async (req, res) => {
   try {
     let { id } = req.user;
-    await connection.query("BEGIN");
 
     let s1 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
 
     if (findCompanyAdmin.rowCount > 0) {
+      await connection.query("BEGIN");
       if (!req.file) {
         return res.status(400).json({ success: false, message: 'No file uploaded' });
       }
@@ -1500,9 +1506,14 @@ module.exports.uploadCreateCardFile = async (req, res) => {
         const row = worksheet.getRow(rowNumber);
         if (rowNumber !== 1) {
           hasData = true;
-          let [, first_name, last_name, user_email, designation, contact_number] = row.values;
-
+          let [, first_name, last_name, user_email, designation, contact_number, whatsapp] = row.values;
+          // console.log(first_name, last_name, user_email, designation, contact_number, "111111111111111111");
+          if (!user_email || !first_name || !last_name || !designation || !contact_number) {
+            // Skip processing if any required field is empty
+            continue;
+          }
           function isValidEmail(email) {
+            console.log(email, "email");
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
           }
@@ -1535,18 +1546,26 @@ module.exports.uploadCreateCardFile = async (req, res) => {
             let card_link = `${process.env.LINK_OF_DIGITAL_CARD}/${companyName}/${card_ref}`;
             let profile_picture = process.env.DEFAULT_USER_PROFILE_PIC;
             let created_by = findCompanyAdmin.rows[0].company_admin_data[0].company_admin_id;
+            let qrCodeSize = 256
 
             fs.mkdirSync(qrCodeDirectory, { recursive: true });
 
-            let qrSuccess = await generateQRCode(qrCodeLink, qrCodeDirectory, qrCodeFileName);
-            if (qrSuccess) {
+            // let qrSuccess = await generateQRCode(qrCodeLink, qrCodeDirectory, qrCodeFileName, qrCodeSize);
+            // console.log(qrSuccess, "qrsucesss");
+
+            const qrCodeImage = qrImage.imageSync(qrCodeLink, { type: "png", size: 256 });
+            console.log(qrCodeImage.length, "qrsucesss");
+            // Save QR code to file
+            fs.writeFileSync(path.join(qrCodeDirectory, qrCodeFileName), qrCodeImage, "binary");
+            if (qrCodeImage.length > 0) {
               let s2 = `
                 INSERT INTO digital_cards
-                  (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number,profile_picture)
+                  (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number,profile_picture,personal_whatsapp)
                 VALUES
-                  ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,$14)
+                  ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,$14,$15)
                 RETURNING *`;
-              let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, mysql_real_escape_string(first_name), mysql_real_escape_string(last_name), mysql_real_escape_string(user_email.toLowerCase()), mysql_real_escape_string(designation), databaseLinkQR, "user", card_link, null, mysql_real_escape_string(company_ref), contact_number, profile_picture]);
+              console.log(s2, "s22222");
+              let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, mysql_real_escape_string(first_name), mysql_real_escape_string(last_name), mysql_real_escape_string(user_email.toLowerCase()), mysql_real_escape_string(designation), databaseLinkQR, "user", card_link, null, mysql_real_escape_string(company_ref), contact_number, profile_picture, whatsapp]);
 
               if (insertData.rowCount > 0) {
                 createdCards.push(...insertData.rows);
@@ -1591,8 +1610,6 @@ module.exports.uploadCreateCardFile = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 }
-
-
 
 module.exports.exportCardDetail = async (req, res) => {
   try {
