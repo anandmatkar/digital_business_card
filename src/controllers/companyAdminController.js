@@ -956,45 +956,45 @@ module.exports.activateMultipleCardsForQR = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 };
-//when deactivating the the card can be used for new user
+//when deactivating,the card can be used for new user
 module.exports.deactivateCard = async (req, res) => {
   try {
     let { id } = req.user;
-    let { card_id } = req.query;
+    let { card_id, status } = req.query;
     if (!card_id) {
       return handleResponse(res, 400, false, "Provide Valid Card Id");
     }
-    await connection.query("BEGIN");
-    let s1 = dbScript(db_sql["Q16"], { var1: id });
-    let findCompanyAdmin = await connection.query(s1);
-    if (findCompanyAdmin.rowCount > 0) {
-      let s2 = dbScript(db_sql["Q22"], { var1: true, var2: card_id });
-      let deactivateCard = await connection.query(s2);
-      if (deactivateCard.rowCount > 0) {
-        let s3 = dbScript(db_sql["Q20"], {
-          var1: findCompanyAdmin.rows[0].used_cards - 1,
-          var2: findCompanyAdmin.rows[0].id,
-        });
-        let reduceUsedCardCount = await connection.query(s3);
-        if (reduceUsedCardCount.rowCount > 0) {
-          await connection.query("COMMIT");
-          return handleResponse(
-            res,
-            200,
-            true,
-            "Card Deactivated Successfully."
-          );
+    if (status == 'activate' || status == 'deactivate') {
+      await connection.query("BEGIN");
+      let s1 = dbScript(db_sql["Q16"], { var1: id });
+      let findCompanyAdmin = await connection.query(s1);
+      if (findCompanyAdmin.rowCount > 0) {
+        let s2 = dbScript(db_sql["Q22"], { var1: status == 'deactivate' ? true : false, var2: card_id });
+        let deactivateCard = await connection.query(s2);
+        if (deactivateCard.rowCount > 0) {
+          let s3 = dbScript(db_sql["Q20"], {
+            var1: status == 'deactivate' ? findCompanyAdmin.rows[0].used_cards - 1 : findCompanyAdmin.rows[0].used_cards + 1,
+            var2: findCompanyAdmin.rows[0].id,
+          });
+          let reduceUsedCardCount = await connection.query(s3);
+          if (reduceUsedCardCount.rowCount > 0) {
+            await connection.query("COMMIT");
+            return handleResponse(res, 200, true, `Card ${status} Successfully.`);
+          } else {
+            await connection.query("ROLLBACK");
+            return handleSWRError(res);
+          }
         } else {
           await connection.query("ROLLBACK");
           return handleSWRError(res);
         }
       } else {
-        await connection.query("ROLLBACK");
-        return handleSWRError(res);
+        return handleResponse(res, 401, false, "Admin not found");
       }
     } else {
-      return handleResponse(res, 401, false, "Admin not found");
+      return handleResponse(res, 400, false, "Invalid status");
     }
+
   } catch (error) {
     await connection.query("ROLLBACK");
     return handleCatchErrors(res, error);
