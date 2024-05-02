@@ -118,7 +118,7 @@ const db_sql = {
   Q18: `INSERT INTO user_media_link (facebook, instagram, extra_link_title, extra_link_url,linkedin,twitter,telegram,whatsapp, youtube,tiktok,line,we_chat,xiao_hong_shu,weibo, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}','{var15}') RETURNING *`,
   Q19: `SELECT dc.*,
           c.company_name,c.company_email,c.company_address,c.company_logo,c.company_contact_number,c.company_website,c.location, c.product_service,c.cover_pic,c.trial_start_date, c.trial_end_date,
-          usm.facebook, usm.instagram, usm.extra_link_title, usm.extra_link_url, usm.whatsapp, usm.weibo, usm.xiao_hong_shu, usm.linkedin, usm.twitter, usm.telegram, usm.youtube, usm.tiktok, usm.line, usm.we_chat
+          usm.facebook, usm.instagram, usm.extra_link_title, usm.extra_link_url, usm.whatsapp, usm.weibo, usm.xiao_hong_shu, usm.linkedin, usm.twitter, usm.telegram, usm.youtube, usm.tiktok, usm.line, usm.we_chat,usm.official_website
         FROM digital_cards dc
           LEFT JOIN company c on c.id = dc.company_id 
           LEFT JOIN user_media_link usm ON usm.company_id = c.id
