@@ -1174,10 +1174,10 @@ module.exports.editCard = async (req, res) => {
   RETURNING *`;
 
         let editCardDetails = await connection.query(s3, [
-          mysql_real_escape_string(first_name),
-          mysql_real_escape_string(last_name),
-          mysql_real_escape_string(user_email.toLowerCase()),
-          mysql_real_escape_string(designation),
+          (first_name),
+          (last_name),
+          (user_email.toLowerCase()),
+          (designation),
           profile_picture,
           bio ? bio : null,
           cover_pic,
