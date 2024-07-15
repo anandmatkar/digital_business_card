@@ -492,7 +492,6 @@ module.exports.editCompanyDetails = async (req, res) => {
         product_service = await handleImage(product_service);
       }
       product_service = JSON.stringify(product_service);
-      console.log(product_service);
       let s2 = `
   UPDATE company 
   SET 
@@ -564,6 +563,7 @@ module.exports.socialMediaDetails = async (req, res) => {
       }
       let s2 = dbScript(db_sql["Q40"], { var1: company_id });
       let findSocialMediaLinks = await connection.query(s2)
+      console.log(findSocialMediaLinks.rows, "11111111111")
       if (findSocialMediaLinks.rowCount > 0) {
         return handleResponse(res, 200, true, "Social Media Details", findSocialMediaLinks.rows);
       } else {
@@ -766,8 +766,15 @@ module.exports.addCompanyDetails = async (req, res) => {
 
       if (insertCompanyDetails.rowCount > 0) {
         insertCompanyDetails.rows[0].product_service = unescape(insertCompanyDetails.rows[0].product_service);
-        await connection.query("COMMIT");
-        return handleResponse(res, 200, true, "Company Details Inserted Successfully.", insertCompanyDetails.rows);
+        let s3 = dbScript(db_sql["Q18"], { var1: null, var2: null, var3: null, var4: null, var5: null, var6: null, var7: null, var8: null, var9: null, var10: null, var11: null, var12: null, var13: null, var14: null, var15: insertCompanyDetails.rows[0].id });
+        let createSocialMedia = await connection.query(s3);
+        if (createSocialMedia.rowCount > 0) {
+          await connection.query("COMMIT");
+          return handleResponse(res, 200, true, "Company Details Inserted Successfully.", insertCompanyDetails.rows);
+        } else {
+          await connection.query("ROLLBACK");
+          return handleSWRError(res);
+        }
       } else {
         await connection.query("ROLLBACK");
         return handleSWRError(res);
@@ -777,8 +784,7 @@ module.exports.addCompanyDetails = async (req, res) => {
     }
   } catch (error) {
     await connection.query("ROLLBACK");
-    console.error(error);
-    return res.status(500).json({ error: error.stack });
+    return handleCatchErrors(res, error);
   }
 };
 
@@ -803,13 +809,48 @@ module.exports.getCompanyDetailsLists = async (req, res) => {
   }
 }
 
+module.exports.setDefaultAddress = async (req, res) => {
+  try {
+    let { id } = req.user;
+    const { company_id } = req.body
+    let s0 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s0);
+    if (findCompanyAdmin.rowCount > 0) {
+      await connection.query("BEGIN");
+
+      let s1 = dbScript(db_sql["Q46"], { var1: false, var2: id });
+      let setRemainingToFalse = await connection.query(s1);
+      if (setRemainingToFalse.rowCount > 0) {
+        let s2 = dbScript(db_sql["Q47"], { var1: true, var2: company_id, var3: id });
+        let setAddressTrue = await connection.query(s2);
+        if (setAddressTrue.rowCount > 0) {
+          await connection.query("COMMIT");
+          return handleResponse(res, 200, true, "Default Address Set Successfully");
+        } else {
+          await connection.query("ROLLBACK");
+          return handleSWRError(res);
+        }
+      } else {
+        await connection.query("ROLLBACK");
+        return handleSWRError(res);
+      }
+
+    } else {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+  } catch (error) {
+    await connection.query("ROLLBACK");
+    return handleCatchErrors(res, error);
+  }
+}
+
 
 /** ========card section===== */
 
 module.exports.createCard = async (req, res) => {
   try {
     let { id } = req.user;
-    let { first_name, last_name, user_email, designation, bio, cover_pic, profile_picture, contact_number, personal_whatsapp
+    let { first_name, last_name, user_email, designation, bio, cover_pic, profile_picture, contact_number, personal_whatsapp, associated_company
     } = req.body;
     await connection.query("BEGIN");
 
@@ -916,17 +957,17 @@ module.exports.createCard = async (req, res) => {
           }
           let s2 = `
           INSERT INTO digital_cards 
-            (company_id, created_by, card_reference, first_name, last_name, user_email, designation, bio, qr_url, user_type, cover_pic, profile_picture, card_url, vcf_card_url, company_ref, contact_number,personal_whatsapp) 
+            (company_id, created_by, card_reference, first_name, last_name, user_email, designation, bio, qr_url, user_type, cover_pic, profile_picture, card_url, vcf_card_url, company_ref, contact_number,personal_whatsapp,associated_company) 
           VALUES 
-            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) 
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,$18) 
           RETURNING *`;
 
-          let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, first_name, last_name, user_email.toLowerCase(), designation, bio ? bio : null, databaseLinkQR, "user", cover_pic, profile_picture, card_link, null, company_ref, contact_number, personal_whatsapp]);
+          let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, first_name, last_name, user_email.toLowerCase(), designation, bio ? bio : null, databaseLinkQR, "user", cover_pic, profile_picture, card_link, null, company_ref, contact_number, personal_whatsapp, associated_company]);
 
           if (insertData.rowCount > 0) {
-            let s4 = dbScript(db_sql["Q20"], {
+            let s4 = dbScript(db_sql["Q48"], {
               var1: Number(usedCards) + 1,
-              var2: findCompanyAdmin.rows[0].id,
+              var2: id,
             });
             let updateCardCount = await connection.query(s4);
             if (updateCardCount.rowCount > 0) {

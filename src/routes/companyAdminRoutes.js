@@ -42,6 +42,7 @@ router.get("/qrCodeList", verifyTokenForCA, controller.companyAdminController.qr
 router.post("/addCompanyAddress", verifyTokenForCA, controller.companyAdminController.addCompanyAddress);
 router.post("/addCompanyDetails", verifyTokenForCA, controller.companyAdminController.addCompanyDetails);
 router.get("/getCompanyDetailsLists", verifyTokenForCA, controller.companyAdminController.getCompanyDetailsLists);
+router.put("/setDefaultAddress", verifyTokenForCA, controller.companyAdminController.setDefaultAddress);
 
 
 

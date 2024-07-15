@@ -111,3 +111,31 @@ CREATE TABLE public.user_media_link (
 );
 
 ALTER TABLE public.super_admin OWNER TO postgres;
+
+CREATE TABLE public.company_address (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL PRIMARY KEY,
+    company_address VARCHAR(250),
+    company_id uuid REFERENCES company(id),
+    address_url TEXT,
+    company_admin uuid REFERENCES company_admin(id),
+    default_address BOOLEAN DEFAULT false,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+);
+
+CREATE TABLE public.company_address_details (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL PRIMARY KEY,
+    company_id uuid REFERENCES company(id),
+    company_admin uuid REFERENCES company_admin(id),
+    company_name VARCHAR(250),
+    company_address VARCHAR(250),
+    description TEXT,
+    company_contact_number VARCHAR(20),
+    company_website VARCHAR(100),
+    default_address BOOLEAN DEFAULT false,
+    location TEXT,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+);
