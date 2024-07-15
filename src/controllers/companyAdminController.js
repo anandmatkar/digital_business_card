@@ -1290,7 +1290,8 @@ module.exports.editCard = async (req, res) => {
       cover_pic,
       profile_picture,
       contact_number,
-      personal_whatsapp
+      personal_whatsapp,
+      associated_company
 
     } = req.body;
 
@@ -1307,33 +1308,6 @@ module.exports.editCard = async (req, res) => {
       let s2 = dbScript(db_sql["Q25"], { var1: card_id });
       let findCard = await connection.query(s2);
       if (findCard.rowCount > 0) {
-        // async function handleImage(bio) {
-        //   const imgRegex = /<img[^>]+src="([^">]+)"/g;
-        //   let counter = 1;
-        //   bio = bio.replace(
-        //     imgRegex,
-        //     (match, imagePath) => {
-        //       if (imagePath.startsWith("https://midin.app/uploads/bioImages") || imagePath.startsWith("uploads/bioImages/") || imagePath.startsWith("../../uploads/bioImages")) {
-        //         // Image path is already in correct format, no need to replace
-        //         return match;
-        //       } else {
-        //         // Extract image data
-        //         const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
-
-        //         // Generate filename
-        //         const filename = Date.now() + "-" + counter++ + "." + format;
-
-        //         // Decode and save image
-        //         const filePath = path.join(__dirname, "..", "..", "uploads", "bioImages", filename);
-        //         fs.writeFileSync(filePath, data, 'base64');
-
-        //         return `<img src="${process.env.BIO_IMAGE_PATH}/${filename}"`;
-        //       }
-        //     }
-        //   );
-        //   return bio;
-        // }
-
         async function handleImage(bio) {
           const imgRegex = /<img[^>]+src="([^">]+)"/g;
           let counter = 1;
@@ -1351,13 +1325,10 @@ module.exports.editCard = async (req, res) => {
                 const correctedPath = imagePath.replace("../..", "https://midin.app");
                 return `<img src="${correctedPath}"`;
               } else if (imagePath.startsWith("data:image")) {
-                // Extract image data
                 const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
 
-                // Generate filename
                 const filename = Date.now() + "-" + counter++ + "." + format;
 
-                // Decode and save image
                 const filePath = path.join(__dirname, "..", "..", "uploads", "bioImages", filename);
                 fs.writeFileSync(filePath, data, 'base64');
 
@@ -1386,9 +1357,10 @@ module.exports.editCard = async (req, res) => {
     bio = $6,
     cover_pic = $7,
     contact_number = $8,
-    personal_whatsapp = $9
+    personal_whatsapp = $9,
+    associated_company = $10
   WHERE
-    id = $10
+    id = $11
     AND deleted_at IS NULL
   RETURNING *`;
 
@@ -1402,7 +1374,8 @@ module.exports.editCard = async (req, res) => {
           cover_pic,
           contact_number,
           personal_whatsapp,
-          card_id
+          associated_company,
+          card_id,
         ]);
 
         if (editCardDetails.rowCount > 0) {

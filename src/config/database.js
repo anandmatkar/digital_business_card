@@ -5,7 +5,7 @@ let connection = new Pool({
     user: process.env.DATABASE_USER,
     host: process.env.DATABASE_HOST,
     database: process.env.DATABASE_NAME,
-    password: process.env.DATABASE_PASSWORD, //enter your postgres password here
+    password: 'Chetan@123', //enter your postgres password here
     port: 5432,
 });
 
