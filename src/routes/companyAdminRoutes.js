@@ -39,6 +39,9 @@ router.put("/editSocialMedia", verifyTokenForCA, controller.companyAdminControll
 router.get("/companyDetails", verifyTokenForCA, controller.companyAdminController.companyDetails);
 router.get("/socialMediaDetails", verifyTokenForCA, controller.companyAdminController.socialMediaDetails);
 router.get("/qrCodeList", verifyTokenForCA, controller.companyAdminController.qrCodeList);
+router.post("/addCompanyAddress", verifyTokenForCA, controller.companyAdminController.addCompanyAddress);
+router.post("/addCompanyDetails", verifyTokenForCA, controller.companyAdminController.addCompanyDetails);
+router.get("/getCompanyDetailsLists", verifyTokenForCA, controller.companyAdminController.getCompanyDetailsLists);
 
 
 

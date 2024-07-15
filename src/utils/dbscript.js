@@ -5,7 +5,7 @@ const db_sql = {
   Q3: `SELECT id,name,email,avatar FROM super_admin WHERE id = '{var1}' AND deleted_at IS NULL`,
   Q4: `UPDATE super_admin SET password = '{var1}' ,updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   Q5: `SELECT * FROM company WHERE company_name = '{var1}' OR company_email = '{var2}' AND deleted_at IS NULL`,
-  Q6: `INSERT INTO company (company_name,company_email,company_contact_number, max_cards, contact_person_name,contact_person_email, company_logo, cover_pic, trial_start_date, trial_end_date) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}', '{var7}', '{var8}', '{var9}', '{var10}') RETURNING *`,
+  Q6: `INSERT INTO company (company_name,company_email,company_contact_number, max_cards, contact_person_name,contact_person_email, company_logo, cover_pic, trial_start_date, trial_end_date,is_default_address) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}', '{var7}', '{var8}', '{var9}', '{var10}','{var11}') RETURNING *`,
   Q7: `SELECT * FROM company WHERE deleted_at IS NULL AND status = '{var1}' ORDER BY created_at DESC;`,
   Q8: `SELECT * FROM company WHERE id = '{var1}' AND deleted_at IS NULL`,
   Q9: `INSERT INTO company_admin (first_name, last_name, email, password, mobile_number, company_id, created_by, role, avatar, company_name) VALUES ('{var1}','{var2}','{var3}','{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}','{var10}') RETURNING *`,
@@ -197,6 +197,7 @@ const db_sql = {
   Q42: `SELECT first_name,last_name,user_email,designation,profile_picture,card_url,qr_url FROM digital_cards WHERE created_by = '{var1}' AND deleted_at IS NULL`,
   Q43: `UPDATE company SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   Q44: `UPDATE company_admin SET deleted_at = '{var1}' WHERE company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+  Q45: `SELECT * FROM company WHERE admin_id = '{var1}' AND deleted_at IS NULL ORDER BY is_default_address desc`
 
 
 };

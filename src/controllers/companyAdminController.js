@@ -531,6 +531,7 @@ module.exports.editCompanyDetails = async (req, res) => {
         company_id
       ]);
       if (updateCompanyDetails.rowCount > 0) {
+
         await connection.query("COMMIT");
         updateCompanyDetails.rows[0].product_service = unescape(updateCompanyDetails.rows[0].product_service);
         return handleResponse(res, 200, true, "Company Details Updated Successfully.", updateCompanyDetails.rows);
@@ -625,6 +626,183 @@ module.exports.editSocialMedia = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 }
+
+module.exports.addCompanyAddress = async (req, res) => {
+  try {
+    let { id } = req.user;
+    let { company_id, company_name, company_email, description, company_address, company_logo, company_website, location, latitude, longitude, company_contact_number, product_service, cover_pic } = req.body
+
+    await connection.query("BEGIN");
+
+    let s1 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s1);
+    if (findCompanyAdmin.rowCount > 0) {
+    } else {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+  } catch (error) {
+    await connection.query("ROLLBACK");
+    return handleCatchErrors(res, error);
+  }
+}
+
+//new feature
+module.exports.addCompanyDetails = async (req, res) => {
+  try {
+    let { id } = req.user;
+    let {
+      company_name,
+      company_email,
+      description,
+      company_address,
+      company_logo,
+      company_website,
+      location,
+      company_contact_number,
+      product_service,
+      cover_pic
+    } = req.body;
+
+    if (
+      !company_name ||
+      !company_email ||
+      !company_contact_number
+    ) {
+      return handleResponse(res, 400, false, "Please provide all the fields.");
+    }
+
+    // let errors = await companyAdminValidation.editCompanyValidation(req, res);
+    // if (!errors.isEmpty()) {
+    //   const firstError = errors.array()[0].msg;
+    //   return handleResponse(res, 400, false, firstError);
+    // }
+
+    await connection.query("BEGIN");
+    let s0 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s0);
+    if (findCompanyAdmin.rowCount > 0) {
+      if (product_service && product_service.trim() !== '') {
+        async function handleImage(product_service) {
+          const imgRegex = /<img[^>]+src="([^">]+)"/g;
+          let counter = 1;
+
+          product_service = product_service.replace(
+            imgRegex,
+            (match, imagePath) => {
+              if (imagePath.startsWith("https://midin.app/uploads/productServiceImage/")) {
+                return match;
+              } else if (imagePath.startsWith("uploads/productServiceImage/")) {
+                return `<img src="https://midin.app/${imagePath}"`;
+              } else if (imagePath.startsWith("../../uploads")) {
+                const correctedPath = imagePath.replace("../..", "https://midin.app");
+                return `<img src="${correctedPath}"`;
+              } else if (imagePath.startsWith("data:image")) {
+                const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
+
+                const filename = Date.now() + "-" + counter++ + "." + format;
+
+                const filePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
+                fs.writeFileSync(filePath, data, 'base64');
+
+                return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+              } else {
+                return match;
+              }
+            }
+          );
+
+          return product_service;
+        }
+        product_service = await handleImage(product_service);
+      }
+      product_service = JSON.stringify(product_service);
+      console.log(product_service);
+
+      let s1 = `
+    INSERT INTO company (
+      admin_id,
+      company_name,
+      company_email,
+      description,
+      company_address,
+      company_logo,
+      company_website,
+      location,
+      company_contact_number,
+      product_service,
+      cover_pic,
+      max_cards,
+      used_cards,
+      contact_person_name,
+      contact_person_designation,
+      contact_person_email,
+      contact_person_mobile,
+      trial_start_date,
+      trial_end_date
+    ) VALUES (
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING *`;
+
+      let insertCompanyDetails = await connection.query(s1, [
+        id,
+        mysql_real_escape_string(company_name),
+        mysql_real_escape_string(company_email.toLowerCase()),
+        description,
+        company_address,
+        company_logo,
+        company_website,
+        location,
+        company_contact_number,
+        product_service,
+        cover_pic,
+        findCompanyAdmin?.rows[0]?.max_cards,
+        findCompanyAdmin?.rows[0]?.used_cards,
+        findCompanyAdmin?.rows[0]?.contact_person_name,
+        findCompanyAdmin?.rows[0]?.contact_person_designation,
+        findCompanyAdmin?.rows[0]?.contact_person_email,
+        findCompanyAdmin?.rows[0]?.contact_person_mobile,
+        findCompanyAdmin?.rows[0]?.trial_start_date,
+        findCompanyAdmin?.rows[0]?.trial_end_date
+      ]);
+
+      if (insertCompanyDetails.rowCount > 0) {
+        insertCompanyDetails.rows[0].product_service = unescape(insertCompanyDetails.rows[0].product_service);
+        await connection.query("COMMIT");
+        return handleResponse(res, 200, true, "Company Details Inserted Successfully.", insertCompanyDetails.rows);
+      } else {
+        await connection.query("ROLLBACK");
+        return handleSWRError(res);
+      }
+    } else {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+  } catch (error) {
+    await connection.query("ROLLBACK");
+    console.error(error);
+    return res.status(500).json({ error: error.stack });
+  }
+};
+
+module.exports.getCompanyDetailsLists = async (req, res) => {
+  try {
+    let { id } = req.user;
+    let s0 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s0);
+    if (findCompanyAdmin.rowCount > 0) {
+      let s1 = dbScript(db_sql["Q45"], { var1: id });
+      let findCompanyDetails = await connection.query(s1);
+      if (findCompanyDetails.rowCount > 0) {
+        return handleResponse(res, 200, true, "Company Details Found.", findCompanyDetails.rows);
+      } else {
+        return handleResponse(res, 200, true, "Company Details Not Found.", findCompanyDetails.rows);
+      }
+    } else {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+  } catch (error) {
+    return handleCatchErrors(res, error);
+  }
+}
+
 
 /** ========card section===== */
 
@@ -1671,6 +1849,29 @@ module.exports.exportCardDetail = async (req, res) => {
   }
 }
 
+module.exports.addAddress = async (req, res) => {
+  try {
+    let { id } = req.user;
+    let { company_address, company_id } = req.body
+    await connection.query("BEGIN");
+
+    let s1 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s1);
+
+    if (findCompanyAdmin?.rowCount == 0) {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+
+    if (findCompanyAdmin.rows[0].id !== company_id) {
+      return handleResponse(res, 401, false, "Not Authorized to Change Address");
+    }
+
+    // let s2 = 
+  } catch (error) {
+    await connection.query("ROLLBACK")
+    return handleCatchErrors(res, error);
+  }
+}
 
 
 
