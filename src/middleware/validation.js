@@ -407,6 +407,7 @@ const cardValidation = {
         .trim()
         .isLength({ min: 10 })
         .withMessage("Contact Number is required"),
+      body("associated_company").trim().isLength({ min: 1 }).withMessage("Associated Company Id is required")
     ];
 
     await Promise.all(

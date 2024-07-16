@@ -1715,6 +1715,7 @@ module.exports.uploadCreateCardFile = async (req, res) => {
         if (rowNumber !== 1) {
           hasData = true;
           let [, first_name, last_name, user_email, designation, contact_number, whatsapp] = row.values;
+          let associated_company = findCompanyAdmin.rows[0].id
           // console.log(first_name, last_name, user_email, designation, contact_number, "111111111111111111");
           if (!user_email || !first_name || !last_name || !designation || !contact_number) {
             // Skip processing if any required field is empty
@@ -1768,12 +1769,11 @@ module.exports.uploadCreateCardFile = async (req, res) => {
             if (qrCodeImage.length > 0) {
               let s2 = `
                 INSERT INTO digital_cards
-                  (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number,profile_picture,personal_whatsapp)
+                  (company_id, created_by, card_reference, first_name, last_name, user_email, designation, qr_url, user_type,  card_url, vcf_card_url, company_ref, contact_number,profile_picture,personal_whatsapp,associated_company)
                 VALUES
-                  ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,$14,$15)
+                  ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,$14,$15,$16)
                 RETURNING *`;
-              console.log(s2, "s22222");
-              let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, mysql_real_escape_string(first_name), mysql_real_escape_string(last_name), mysql_real_escape_string(user_email.toLowerCase()), mysql_real_escape_string(designation), databaseLinkQR, "user", card_link, null, mysql_real_escape_string(company_ref), contact_number, profile_picture, whatsapp]);
+              let insertData = await connection.query(s2, [findCompanyAdmin.rows[0].id, created_by, card_ref, mysql_real_escape_string(first_name), mysql_real_escape_string(last_name), mysql_real_escape_string(user_email.toLowerCase()), mysql_real_escape_string(designation), databaseLinkQR, "user", card_link, null, mysql_real_escape_string(company_ref), contact_number, profile_picture, whatsapp, associated_company]);
 
               if (insertData.rowCount > 0) {
                 createdCards.push(...insertData.rows);
