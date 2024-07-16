@@ -844,6 +844,14 @@ module.exports.setDefaultAddress = async (req, res) => {
   }
 }
 
+module.exports.deleteCompanyDetails = async (req, res) => {
+  try {
+
+  } catch (error) {
+
+  }
+}
+
 
 /** ========card section===== */
 
