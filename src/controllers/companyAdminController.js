@@ -834,7 +834,6 @@ module.exports.setDefaultAddress = async (req, res) => {
         await connection.query("ROLLBACK");
         return handleSWRError(res);
       }
-
     } else {
       return handleResponse(res, 401, false, "Admin not found");
     }
@@ -846,9 +845,34 @@ module.exports.setDefaultAddress = async (req, res) => {
 
 module.exports.deleteCompanyDetails = async (req, res) => {
   try {
+    const { id } = req.user;
+    const { company_id } = req.body
+    let s0 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s0);
+    if (findCompanyAdmin.rowCount > 0) {
+      await connection.query("BEGIN");
+      let s1 = dbScript(db_sql["Q49"], { var1: company_id });
+      let findAssignedCard = await connection.query(s1);
+      if (findAssignedCard.rowCount > 0) {
+        return handleResponse(res, 400, false, "Can't Delete,Company is assigned to Card");
+      } else {
+        let s2 = dbScript(db_sql["Q50"], { var1: company_id });
+        let deleteCompany = await connection.query(s2);
+        if (deleteCompany.rowCount > 0) {
+          await connection.query("COMMIT");
+          return handleResponse(res, 200, true, "Company Deleted Successfully");
+        } else {
+          await connection.query("ROLLBACK");
+          return handleSWRError(res);
+        }
+      }
 
+    } else {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
   } catch (error) {
-
+    await connection.query("ROLLBACK");
+    return handleCatchErrors(res, error);
   }
 }
 
