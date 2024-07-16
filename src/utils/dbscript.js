@@ -202,7 +202,13 @@ const db_sql = {
   Q47: `UPDATE company SET is_default_address = '{var1}' WHERE id = '{var2}' AND admin_id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   Q48: `UPDATE company SET used_cards = '{var1}' WHERE admin_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   Q49: `SELECT * FROM digital_cards WHERE associated_company = '{var1}' AND deleted_at IS NULL`,
-  Q50: `DELETE FROM company WHERE id = '{var1}' AND admin_id = '{var2}' AND deleted_at IS NULL RETURNING *`
+  Q50: `DELETE FROM company 
+WHERE id = '{var1}' 
+  AND admin_id = '{var2}' 
+  AND deleted_at IS NULL 
+  AND is_main_company = false 
+RETURNING *`,
+  Q51: `DELETE FROM user_media_link WHERE company_id = '{var1}' AND deleted_at IS NULL RETURNING *`
 };
 
 const db_sql_ca = {

@@ -856,8 +856,10 @@ module.exports.deleteCompanyDetails = async (req, res) => {
       if (findAssignedCard.rowCount > 0) {
         return handleResponse(res, 400, false, "Can't Delete,Company is assigned to Card");
       } else {
-        let s2 = dbScript(db_sql["Q50"], { var1: company_id });
-        let deleteCompany = await connection.query(s2);
+        let s2 = dbScript(db_sql["Q51"], { var1: company_id });
+        let deleteSocialLinks = await connection.query(s2);
+        let s3 = dbScript(db_sql["Q50"], { var1: company_id, var2: id });
+        let deleteCompany = await connection.query(s3);
         if (deleteCompany.rowCount > 0) {
           await connection.query("COMMIT");
           return handleResponse(res, 200, true, "Company Deleted Successfully");
@@ -866,7 +868,6 @@ module.exports.deleteCompanyDetails = async (req, res) => {
           return handleSWRError(res);
         }
       }
-
     } else {
       return handleResponse(res, 401, false, "Admin not found");
     }
