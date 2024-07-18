@@ -877,6 +877,140 @@ module.exports.deleteCompanyDetails = async (req, res) => {
   }
 }
 
+module.exports.editExtraCompanyDetails = async (req, res) => {
+  try {
+    let { id } = req.user;
+    let {
+      company_id,
+      company_name,
+      company_email,
+      description,
+      company_address,
+      company_logo,
+      company_website,
+      location,
+      latitude,
+      longitude,
+      company_contact_number,
+      product_service,
+      cover_pic
+    } = req.body;
+
+    if (
+      !company_id ||
+      !company_name ||
+      !company_email ||
+      !company_contact_number
+    ) {
+      return handleResponse(res, 400, false, "Please provide all the fields.");
+    }
+
+    let isValidCId = isValidUUID(company_id);
+    if (!isValidCId) {
+      return handleResponse(res, 400, false, "Invalid Company Id");
+    }
+
+    let errors = await companyAdminValidation.editCompanyValidation(req, res);
+    if (!errors.isEmpty()) {
+      const firstError = errors.array()[0].msg;
+      return handleResponse(res, 400, false, firstError);
+    }
+
+    await connection.query("BEGIN");
+
+    let s1 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s1);
+    if (findCompanyAdmin.rowCount > 0) {
+      if (product_service && product_service.trim() !== '') {
+        async function handleImage(product_service) {
+          const imgRegex = /<img[^>]+src="([^">]+)"/g;
+          let counter = 1;
+
+          product_service = product_service.replace(
+            imgRegex,
+            (match, imagePath) => {
+              if (imagePath.startsWith("https://midin.app/uploads/productServiceImage/")) {
+                return match;
+              } else if (imagePath.startsWith("uploads/productServiceImage/")) {
+                return `<img src="https://midin.app/${imagePath}"`;
+              } else if (imagePath.startsWith("../../uploads")) {
+                const correctedPath = imagePath.replace("../..", "https://midin.app");
+                return `<img src="${correctedPath}"`;
+              } else if (imagePath.startsWith("data:image")) {
+                const [, format, data] = imagePath.match(/^data:image\/(\w+);base64,(.+)$/);
+
+                const filename = Date.now() + "-" + counter++ + "." + format;
+
+                const filePath = path.join(__dirname, "..", "..", "uploads", "productServiceImage", filename);
+                fs.writeFileSync(filePath, data, 'base64');
+
+                return `<img src="${process.env.PRODUCT_SERVICE_IMAGE_PATH}/${filename}"`;
+              } else {
+                return match;
+              }
+            }
+          );
+
+          return product_service;
+        }
+        product_service = await handleImage(product_service);
+      }
+      product_service = JSON.stringify(product_service);
+      let s2 = `
+  UPDATE company 
+  SET 
+    company_name = $1, 
+    company_email = $2,
+    description = $3,
+    company_address = $4,
+    company_logo = $5,
+    company_website = $6,
+    location = $7,
+    latitude = $8,
+    longitude = $9,
+    company_contact_number = $10,
+    product_service = $11,
+    cover_pic = $12
+  WHERE 
+    admin_id = $13 
+    AND id = $14
+    AND deleted_at IS NULL 
+  RETURNING *`;
+
+      let updateCompanyDetails = await connection.query(s2, [
+        mysql_real_escape_string(company_name),
+        mysql_real_escape_string(company_email.toLowerCase()),
+        (description),
+        (company_address),
+        company_logo,
+        company_website,
+        location,
+        latitude,
+        longitude,
+        company_contact_number,
+        product_service,
+        cover_pic,
+        id,
+        company_id
+      ]);
+      if (updateCompanyDetails.rowCount > 0) {
+
+        await connection.query("COMMIT");
+        updateCompanyDetails.rows[0].product_service = unescape(updateCompanyDetails.rows[0].product_service);
+        return handleResponse(res, 200, true, "Company Details Updated Successfully.", updateCompanyDetails.rows);
+      } else {
+        await connection.query("ROLLBACK");
+        return handleSWRError(res);
+      }
+    } else {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+  } catch (error) {
+    await connection.query("ROLLBACK");
+    console.error(error);
+    return res.status(500).json({ error: error.stack });
+  }
+};
 
 /** ========card section===== */
 

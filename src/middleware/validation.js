@@ -363,11 +363,6 @@ const companyAdminValidation = {
         .isLength({ min: 1 })
         .escape()
         .withMessage("Company Address is required"),
-      // body('location')
-      //     .trim()
-      //     .isLength({ min: 1 })
-      //     .escape()
-      //     .withMessage('Location is required'),
       body("company_contact_number")
         .trim()
         .escape()
