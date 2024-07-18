@@ -798,9 +798,9 @@ module.exports.getCompanyDetailsLists = async (req, res) => {
       let findCompanyDetails = await connection.query(s1);
       if (findCompanyDetails.rowCount > 0) {
         if (findCompanyAdmin.rows[0].product_service) {
-          findCompanyAdmin.rows[0].product_service = unescape(JSON.parse(findCompanyAdmin.rows[0].product_service));
+          findCompanyDetails.rows[0].product_service = unescape(JSON.parse(findCompanyDetails.rows[0].product_service));
         }
-        findCompanyAdmin.rows[0].cover_pic = findCompanyAdmin.rows[0].cover_pic || process.env.DEFAULT_CARD_COVER_PIC;
+        findCompanyDetails.rows[0].cover_pic = findCompanyDetails.rows[0].cover_pic || process.env.DEFAULT_CARD_COVER_PIC;
         return handleResponse(res, 200, true, "Company Details Found.", findCompanyDetails.rows);
       } else {
         return handleResponse(res, 200, true, "Company Details Not Found.", findCompanyDetails.rows);
