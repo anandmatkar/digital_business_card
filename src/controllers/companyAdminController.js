@@ -671,11 +671,11 @@ module.exports.addCompanyDetails = async (req, res) => {
       return handleResponse(res, 400, false, "Please provide all the fields.");
     }
 
-    // let errors = await companyAdminValidation.editCompanyValidation(req, res);
-    // if (!errors.isEmpty()) {
-    //   const firstError = errors.array()[0].msg;
-    //   return handleResponse(res, 400, false, firstError);
-    // }
+    let errors = await companyAdminValidation.editCompanyValidation(req, res);
+    if (!errors.isEmpty()) {
+      const firstError = errors.array()[0].msg;
+      return handleResponse(res, 400, false, firstError);
+    }
 
     await connection.query("BEGIN");
     let s0 = dbScript(db_sql["Q16"], { var1: id });
@@ -2057,6 +2057,3 @@ module.exports.addAddress = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 }
-
-
-
