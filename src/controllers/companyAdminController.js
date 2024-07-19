@@ -558,9 +558,9 @@ module.exports.socialMediaDetails = async (req, res) => {
     let s1 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
     if (findCompanyAdmin.rowCount > 0) {
-      if (findCompanyAdmin.rows[0].id !== company_id) {
-        return handleResponse(res, 401, false, "You are unauthorized to access this data.");
-      }
+      // if (findCompanyAdmin.rows[0].id !== company_id) {
+      //   return handleResponse(res, 401, false, "You are unauthorized to access this data.");
+      // }
       let s2 = dbScript(db_sql["Q40"], { var1: company_id });
       let findSocialMediaLinks = await connection.query(s2)
       console.log(findSocialMediaLinks.rows, "11111111111")
