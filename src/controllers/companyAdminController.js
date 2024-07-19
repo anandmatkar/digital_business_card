@@ -606,9 +606,9 @@ module.exports.editSocialMedia = async (req, res) => {
     let s1 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
     if (findCompanyAdmin.rowCount > 0) {
-      if (findCompanyAdmin.rows[0].id !== company_id) {
-        return handleResponse(res, 401, false, "You are unauthorized to change this data.");
-      }
+      // if (findCompanyAdmin.rows[0].id !== company_id) {
+      //   return handleResponse(res, 401, false, "You are unauthorized to change this data.");
+      // }
       let s2 = dbScript(db_sql["Q41"], { var1: facebook, var2: instagram, var3: twitter, var4: youtube, var5: linkedin, var6: xiao_hong_shu, var7: tiktok, var8: we_chat, var9: line, var10: telegram, var11: weibo, var12: company_id, var13: official_website });
       let updateSocialMedia = await connection.query(s2);
       if (updateSocialMedia.rowCount > 0) {
