@@ -793,14 +793,23 @@ module.exports.getCompanyDetailsLists = async (req, res) => {
     let { id } = req.user;
     let s0 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s0);
+
     if (findCompanyAdmin.rowCount > 0) {
       let s1 = dbScript(db_sql["Q45"], { var1: id });
       let findCompanyDetails = await connection.query(s1);
+
       if (findCompanyDetails.rowCount > 0) {
-        if (findCompanyDetails.rows[0].product_service) {
-          findCompanyDetails.rows[0].product_service = unescape(JSON.parse(findCompanyDetails.rows[0].product_service));
-        }
-        findCompanyDetails.rows[0].cover_pic = findCompanyDetails.rows[0].cover_pic || process.env.DEFAULT_CARD_COVER_PIC;
+        findCompanyDetails.rows.forEach((company) => {
+          if (company.product_service) {
+            try {
+              company.product_service = unescape(JSON.parse(company.product_service));
+            } catch (e) {
+              console.error("Error parsing product_service for company ID:", company.id, e);
+              company.product_service = null;
+            }
+          }
+          company.cover_pic = company.cover_pic || process.env.DEFAULT_CARD_COVER_PIC;
+        });
         return handleResponse(res, 200, true, "Company Details Found.", findCompanyDetails.rows);
       } else {
         return handleResponse(res, 200, true, "Company Details Not Found.", findCompanyDetails.rows);
@@ -811,7 +820,8 @@ module.exports.getCompanyDetailsLists = async (req, res) => {
   } catch (error) {
     return handleCatchErrors(res, error);
   }
-}
+};
+
 
 module.exports.setDefaultAddress = async (req, res) => {
   try {
