@@ -797,7 +797,7 @@ module.exports.getCompanyDetailsLists = async (req, res) => {
       let s1 = dbScript(db_sql["Q45"], { var1: id });
       let findCompanyDetails = await connection.query(s1);
       if (findCompanyDetails.rowCount > 0) {
-        if (findCompanyAdmin.rows[0].product_service) {
+        if (findCompanyDetails.rows[0].product_service) {
           findCompanyDetails.rows[0].product_service = unescape(JSON.parse(findCompanyDetails.rows[0].product_service));
         }
         findCompanyDetails.rows[0].cover_pic = findCompanyDetails.rows[0].cover_pic || process.env.DEFAULT_CARD_COVER_PIC;
