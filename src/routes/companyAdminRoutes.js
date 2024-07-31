@@ -45,6 +45,7 @@ router.get("/getCompanyDetailsLists", verifyTokenForCA, controller.companyAdminC
 router.put("/setDefaultAddress", verifyTokenForCA, controller.companyAdminController.setDefaultAddress);
 router.put("/deleteCompanyDetails", verifyTokenForCA, controller.companyAdminController.deleteCompanyDetails);
 router.put("/editExtraCompanyDetails", verifyTokenForCA, controller.companyAdminController.editExtraCompanyDetails);
+// router.get("/test", controller.companyAdminController.test);
 
 
 

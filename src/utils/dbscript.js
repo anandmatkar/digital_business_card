@@ -217,6 +217,16 @@ const db_sql_ca = {
   Q3: `SELECT * FROM company_admin WHERE id = '{var1}' AND deleted_at IS NULL AND is_active = true`,
   Q4: `UPDATE company_admin SET password = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   Q5: `UPDATE company_admin SET first_name = '{var2}', last_name = '{var3}', email = '{var4}', phone_number = '{var5}', mobile_number = '{var6}', avatar = '{var7}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+  Q6: `SELECT 
+  ca.*,
+  json_agg(c) AS company_data
+FROM 
+  company_admin ca
+  LEFT JOIN company c ON ca.company_id = c.id
+WHERE 
+  ca.email = '{var1}' AND ca.deleted_at IS NULL
+GROUP BY 
+  ca.id;`
 };
 
 function dbScript(template, variables) {

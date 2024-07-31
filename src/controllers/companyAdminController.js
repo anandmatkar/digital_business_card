@@ -50,12 +50,18 @@ module.exports.loginCompanyAdmin = async (req, res) => {
       return handleResponse(res, 400, false, firstError);
     }
 
-    let s1 = dbScript(db_sql_ca["Q1"], {
+    let s1 = dbScript(db_sql_ca["Q6"], {
       var1: mysql_real_escape_string(email.toLowerCase()),
     });
     let findCompanyAdmin = await connection.query(s1);
     if (findCompanyAdmin.rowCount > 0) {
       if (findCompanyAdmin.rows[0].is_active) {
+        let trial_end_date = new Date(findCompanyAdmin.rows[0].company_data[0].trial_end_date);
+        let current_date = new Date();
+        if (trial_end_date < current_date) {
+          return handleResponse(res, 400, false, "Your trial period has ended. Please contact us to upgrade your account.");
+        }
+
         let matchPassword = await bcrypt.compare(
           password,
           findCompanyAdmin.rows[0].password
