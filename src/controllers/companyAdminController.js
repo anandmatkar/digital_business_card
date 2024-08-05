@@ -1651,11 +1651,36 @@ module.exports.uploadCardCoverPicture = async (req, res) => {
 };
 
 // Your endpoint handler
+// module.exports.vcf = async (req, res) => {
+//   try {
+//     let { card_id } = req.query;
+//     let s2 = dbScript(db_sql["Q31"], { var1: card_id, var2: false });
+
+//     let findCardDetails = await connection.query(s2);
+//     console.log(findCardDetails.rows, "findCard")
+//     if (findCardDetails.rowCount > 0) {
+//       let vCardString = generateVCard(findCardDetails.rows[0]);
+//       res.set("Content-Type", "text/vcard");
+//       res.set(
+//         "Content-Disposition",
+//         `attachment; filename=${findCardDetails.rows[0].first_name}_${findCardDetails.rows[0].last_name}.vcf`
+//       );
+//       res.send(vCardString);
+//     } else {
+//       return handleResponse(res, 404, false, "No cards Found");
+//     }
+//   } catch (error) {
+//     return handleCatchErrors(res, error);
+//   }
+// };
+
 module.exports.vcf = async (req, res) => {
   try {
     let { card_id } = req.query;
     let s2 = dbScript(db_sql["Q31"], { var1: card_id, var2: false });
+
     let findCardDetails = await connection.query(s2);
+    console.log(findCardDetails.rows, "findCard");
     if (findCardDetails.rowCount > 0) {
       let vCardString = generateVCard(findCardDetails.rows[0]);
       res.set("Content-Type", "text/vcard");

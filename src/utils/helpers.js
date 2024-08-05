@@ -71,14 +71,43 @@ module.exports.formatCompanyName = (companyName) => {
     return formattedName;
 }
 
-module.exports.generateVCard = (data) => {
-    let vCardString = `BEGIN:VCARD\nVERSION:3.0\n`;
-    vCardString += `FN:${data.first_name} ${data.last_name}\n`;
-    vCardString += `EMAIL;TYPE=INTERNET:${data.user_email}\n`;
-    vCardString += `TEL;TYPE=WORK,VOICE:${data.contact_number}\n`;
-    vCardString += `TITLE:${data.designation}\n`;
-    vCardString += `ORG:${data.company_name};${data.department || ''}\n`; // assuming department is available
-    // Add more fields if needed
-    vCardString += `END:VCARD`;
-    return vCardString;
-};
+// module.exports.generateVCard = (data) => {
+//     let vCardString = `BEGIN:VCARD\nVERSION:3.0\n`;
+//     vCardString += `FN:${data.first_name} ${data.last_name}\n`;
+//     vCardString += `EMAIL;TYPE=INTERNET:${data.user_email}\n`;
+//     vCardString += `TEL;TYPE=WORK,VOICE:${data.contact_number}\n`;
+//     vCardString += `TITLE:${data.designation}\n`;
+//     vCardString += `ORG:${data.company_name};${data.department || ''}\n`; // assuming department is available
+//     // Add more fields if needed
+//     vCardString += `END:VCARD`;
+//     return vCardString;
+// };
+
+module.exports.generateVCard = (card) => {
+    return `
+  BEGIN:VCARD
+  VERSION:3.0
+  FN:${card.first_name} ${card.last_name}
+  EMAIL;TYPE=INTERNET:${card.user_email}
+  TEL;TYPE=WORK,VOICE:${card.contact_number}
+  TITLE:${card.designation}
+  ORG:${card.company_name}
+  ADR;TYPE=WORK:${card.company_address}
+  URL:${card.company_website}
+  PHOTO;VALUE=URI:${card.profile_picture}
+  LOGO;VALUE=URI:${card.company_logo}
+  NOTE:${card.bio ? card.bio : ""}
+  X-QR-CODE:${card.qr_url}
+  X-COVER-PIC:${card.cover_pic}
+  ${card.facebook ? `X-FACEBOOK:${card.facebook}` : ""}
+  ${card.instagram ? `X-INSTAGRAM:${card.instagram}` : ""}
+  ${card.twitter ? `X-TWITTER:${card.twitter}` : ""}
+  ${card.linkedin ? `X-LINKEDIN:${card.linkedin}` : ""}
+  ${card.whatsapp ? `X-WHATSAPP:${card.whatsapp}` : ""}
+  ${card.telegram ? `X-TELEGRAM:${card.telegram}` : ""}
+  ${card.youtube ? `X-YOUTUBE:${card.youtube}` : ""}
+  ${card.tiktok ? `X-TIKTOK:${card.tiktok}` : ""}
+  END:VCARD
+    `.trim();
+}
+
