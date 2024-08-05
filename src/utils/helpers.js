@@ -83,31 +83,32 @@ module.exports.formatCompanyName = (companyName) => {
 //     return vCardString;
 // };
 
-module.exports.generateVCard = (card) => {
-    return `
-  BEGIN:VCARD
-  VERSION:3.0
-  FN:${card.first_name} ${card.last_name}
-  EMAIL;TYPE=INTERNET:${card.user_email}
-  TEL;TYPE=WORK,VOICE:${card.contact_number}
-  TITLE:${card.designation}
-  ORG:${card.company_name}
-  ADR;TYPE=WORK:${card.company_address}
-  URL:${card.company_website}
-  PHOTO;VALUE=URI:${card.profile_picture}
-  LOGO;VALUE=URI:${card.company_logo}
-  NOTE:${card.bio ? card.bio : ""}
-  X-QR-CODE:${card.qr_url}
-  X-COVER-PIC:${card.cover_pic}
-  ${card.facebook ? `X-FACEBOOK:${card.facebook}` : ""}
-  ${card.instagram ? `X-INSTAGRAM:${card.instagram}` : ""}
-  ${card.twitter ? `X-TWITTER:${card.twitter}` : ""}
-  ${card.linkedin ? `X-LINKEDIN:${card.linkedin}` : ""}
-  ${card.whatsapp ? `X-WHATSAPP:${card.whatsapp}` : ""}
-  ${card.telegram ? `X-TELEGRAM:${card.telegram}` : ""}
-  ${card.youtube ? `X-YOUTUBE:${card.youtube}` : ""}
-  ${card.tiktok ? `X-TIKTOK:${card.tiktok}` : ""}
-  END:VCARD
-    `.trim();
-}
+module.exports.generateVCard = (data) => {
+    let vCardString = `BEGIN:VCARD\nVERSION:3.0\n`;
+    vCardString += `FN:${data.first_name} ${data.last_name}\n`;
+    vCardString += `EMAIL;TYPE=INTERNET:${data.user_email}\n`;
+    vCardString += `TEL;TYPE=WORK,VOICE:${data.contact_number}\n`;
+    vCardString += `TITLE:${data.designation}\n`;
+    vCardString += `ORG:${data.company_name}\n`;
+    vCardString += `ADR;TYPE=WORK:;;${data.company_address}\n`;
+    vCardString += `URL:${data.company_website}\n`;
+    vCardString += `PHOTO;VALUE=URI:${data.profile_picture}\n`;
+    vCardString += `LOGO;VALUE=URI:${data.company_logo}\n`;
+    vCardString += `NOTE:${data.bio ? data.bio : ''}\n`;
+    vCardString += `X-QR-CODE:${data.qr_url}\n`;
+    vCardString += `X-COVER-PIC:${data.cover_pic}\n`;
+
+    if (data.facebook) vCardString += `X-FACEBOOK:${data.facebook}\n`;
+    if (data.instagram) vCardString += `X-INSTAGRAM:${data.instagram}\n`;
+    if (data.twitter) vCardString += `X-TWITTER:${data.twitter}\n`;
+    if (data.linkedin) vCardString += `X-LINKEDIN:${data.linkedin}\n`;
+    if (data.whatsapp) vCardString += `X-WHATSAPP:${data.whatsapp}\n`;
+    if (data.telegram) vCardString += `X-TELEGRAM:${data.telegram}\n`;
+    if (data.youtube) vCardString += `X-YOUTUBE:${data.youtube}\n`;
+    if (data.tiktok) vCardString += `X-TIKTOK:${data.tiktok}\n`;
+
+    vCardString += `END:VCARD`;
+    return vCardString;
+};
+
 
