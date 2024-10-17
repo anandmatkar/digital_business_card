@@ -998,8 +998,8 @@ module.exports.editExtraCompanyDetails = async (req, res) => {
   RETURNING *`;
 
       let updateCompanyDetails = await connection.query(s2, [
-        mysql_real_escape_string(company_name),
-        mysql_real_escape_string(company_email.toLowerCase()),
+        (company_name),
+        (company_email.toLowerCase()),
         (description),
         (company_address),
         company_logo,
