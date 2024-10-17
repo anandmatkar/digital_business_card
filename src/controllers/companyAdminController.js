@@ -750,8 +750,8 @@ module.exports.addCompanyDetails = async (req, res) => {
 
       let insertCompanyDetails = await connection.query(s1, [
         id,
-        mysql_real_escape_string(company_name),
-        mysql_real_escape_string(company_email.toLowerCase()),
+        (company_name),
+        (company_email.toLowerCase()),
         description,
         company_address,
         company_logo,
