@@ -750,8 +750,8 @@ module.exports.addCompanyDetails = async (req, res) => {
 
       let insertCompanyDetails = await connection.query(s1, [
         id,
-        mysql_real_escape_string(company_name),
-        mysql_real_escape_string(company_email.toLowerCase()),
+        company_name,
+        company_email.toLowerCase(),
         description,
         company_address,
         company_logo,
@@ -998,10 +998,10 @@ module.exports.editExtraCompanyDetails = async (req, res) => {
   RETURNING *`;
 
       let updateCompanyDetails = await connection.query(s2, [
-        mysql_real_escape_string(company_name),
-        mysql_real_escape_string(company_email.toLowerCase()),
-        (description),
-        (company_address),
+        company_name,
+        company_email.toLowerCase(),
+        description,
+        company_address,
         company_logo,
         company_website,
         location,
@@ -1684,7 +1684,6 @@ module.exports.vcf = async (req, res) => {
     let findCardDetails = await connection.query(s2);
     if (findCardDetails.rowCount > 0) {
       let vCardString = await generateVCard(findCardDetails.rows[0]);
-      console.log(vCardString, "11111111111111")
       res.set("Content-Type", "text/vcard");
       res.set(
         "Content-Disposition",

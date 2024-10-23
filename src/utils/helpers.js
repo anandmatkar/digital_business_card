@@ -147,7 +147,6 @@ module.exports.generateVCard = async (data) => {
         .addCompany(data.company_name)
         .addPhoneNumber(data.contact_number, "WORK")
         .addEmail(data.user_email)
-        // .addAddress(data.company_address)
         .addPhoto(image, "PNG")
         .addURL(data.company_website);
 
