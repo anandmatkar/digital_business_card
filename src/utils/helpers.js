@@ -135,7 +135,6 @@ const VCard = require("vcard-creator").default;
 const axios = require("axios");
 
 module.exports.generateVCard = async (data) => {
-    console.log(data, "dataaaaaaaaa")
     const url = data.profile_picture;
     const response = await axios.get(url, { responseType: "arraybuffer" });
     const image = Buffer.from(response.data, "binary").toString("base64");
@@ -148,7 +147,7 @@ module.exports.generateVCard = async (data) => {
         .addCompany(data.company_name)
         .addPhoneNumber(data.contact_number, "WORK")
         .addEmail(data.user_email)
-        .addAddress(data.company_address)
+        // .addAddress(data.company_address)
         .addPhoto(image, "PNG")
         .addURL(data.company_website);
 
