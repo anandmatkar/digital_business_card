@@ -1674,15 +1674,17 @@ module.exports.uploadCardCoverPicture = async (req, res) => {
 //   }
 // };
 
+
+
 module.exports.vcf = async (req, res) => {
   try {
     let { card_id } = req.query;
     let s2 = dbScript(db_sql["Q31"], { var1: card_id, var2: false });
 
     let findCardDetails = await connection.query(s2);
-    console.log(findCardDetails.rows, "findCard");
     if (findCardDetails.rowCount > 0) {
-      let vCardString = generateVCard(findCardDetails.rows[0]);
+      let vCardString = await generateVCard(findCardDetails.rows[0]);
+      console.log(vCardString, "11111111111111")
       res.set("Content-Type", "text/vcard");
       res.set(
         "Content-Disposition",
