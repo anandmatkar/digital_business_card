@@ -886,13 +886,13 @@ module.exports.uploadCompanyLogoForSA = async (req, res) => {
     let file = req.file;
     const validExtensions = ["jpg", "jpeg", "png"];
     const fileExtension = file.originalname.split(".").pop().toLowerCase();
-    if (!validExtensions.includes(fileExtension)) {
-      fs.unlinkSync(file.path);
-      return res.status(400).json({
-        success: false,
-        message: "Only JPG, JPEG, and PNG files are allowed.",
-      });
-    }
+    // if (!validExtensions.includes(fileExtension)) {
+    //   fs.unlinkSync(file.path);
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Only JPG, JPEG, and PNG files are allowed.",
+    //   });
+    // }
 
     let path = `${process.env.COMPANY_LOGO_LINK}/${file.filename}`;
     return handleResponse(
