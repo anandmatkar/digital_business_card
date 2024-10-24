@@ -2,35 +2,7 @@ const qr = require('qrcode');
 const path = require('path');
 const { promisify } = require('util');
 
-// module.exports.mysql_real_escape_string = (str) => {
-//     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
-//         switch (char) {
-//             case "\0":
-//                 return "\\0";
-//             case "\x08":
-//                 return "\\b";
-//             case "\x09":
-//                 return "\\t";
-//             case "\x1a":
-//                 return "\\z";
-//             case "\n":
-//                 return " ";
-//             case "\r":
-//                 return "\\r";
-//             case "\"":
-//                 return "\"" + char;
-//             case "'":
-//                 return "'" + char;
-//             case "\\":
-//                 return "'" + char;
-//             case "%":
-//                 return "\%";
-//         }
-//     })
-// }
-
 module.exports.mysql_real_escape_string = (str) => {
-    if (typeof str !== "string") return str;
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
         switch (char) {
             case "\0":
@@ -42,20 +14,21 @@ module.exports.mysql_real_escape_string = (str) => {
             case "\x1a":
                 return "\\z";
             case "\n":
-                return " ";    // Avoid newlines
+                return " ";
             case "\r":
-                return "\\r";  // Replace carriage return
+                return "\\r";
             case "\"":
-                return "\\\""; // Escape double quote for SQL
+                return "\"" + char;
             case "'":
-                return "\\'";  // Escape single quote
+                return "'" + char;
             case "\\":
-                return "\\\\"; // Only one backslash should be used
+                return "'" + char;
             case "%":
-                return "\\%";  // Escape percentage signs
+                return "\%";
         }
-    });
+    })
 }
+
 module.exports.isValidUUID = (uuid) => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);

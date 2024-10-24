@@ -300,15 +300,10 @@ module.exports.changePassword = async (req, res) => {
 module.exports.editProfile = async (req, res) => {
   try {
     let { id } = req.user;
-    let { first_name, last_name, email, phone_number, mobile_number, avatar } =
-      req.body;
+    let { first_name, last_name, email, phone_number, mobile_number, avatar } = req.body;
+
     if (!first_name || !last_name || !email) {
-      return handleResponse(
-        res,
-        400,
-        false,
-        "Please Provide First Name and Last Name and Email"
-      );
+      return handleResponse(res, 400, false, "Please Provide First Name and Last Name and Email");
     }
 
     let errors = await companyAdminValidation.editProfileCAValidation(req, res);
@@ -321,28 +316,36 @@ module.exports.editProfile = async (req, res) => {
     let s1 = dbScript(db_sql_ca["Q3"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
     if (findCompanyAdmin.rowCount > 0) {
-      let s2 = dbScript(db_sql_ca["Q5"], {
-        var1: id,
-        var2: (first_name),
-        var3: (last_name),
-        var4: (email),
-        var5: (phone_number),
-        var6: (mobile_number),
-        var7: (avatar),
-      });
-      let updateCAProfile = await connection.query(s2);
+      let updateCAProfileQuery = `
+        UPDATE company_admin 
+        SET 
+          first_name = $2, 
+          last_name = $3, 
+          email = $4, 
+          phone_number = $5, 
+          mobile_number = $6, 
+          avatar = $7 
+        WHERE 
+          id = $1 
+          AND deleted_at IS NULL 
+        RETURNING *
+      `;
+
+      let updateCAProfile = await connection.query(updateCAProfileQuery, [
+        id,
+        first_name,
+        last_name,
+        email,
+        phone_number,
+        mobile_number,
+        avatar,
+      ]);
 
       if (updateCAProfile.rowCount > 0) {
         let updatedCADetails = updateCAProfile.rows[0];
         delete updatedCADetails.password;
         await connection.query("COMMIT");
-        return handleResponse(
-          res,
-          200,
-          true,
-          "Company Admin Profile Updated successfully",
-          updatedCADetails
-        );
+        return handleResponse(res, 200, true, "Company Admin Profile Updated successfully", updatedCADetails);
       } else {
         await connection.query("ROLLBACK");
         return handleSWRError(res);
@@ -355,6 +358,66 @@ module.exports.editProfile = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 };
+
+
+// module.exports.editProfile = async (req, res) => {
+//   try {
+//     let { id } = req.user;
+//     let { first_name, last_name, email, phone_number, mobile_number, avatar } =
+//       req.body;
+//     if (!first_name || !last_name || !email) {
+//       return handleResponse(
+//         res,
+//         400,
+//         false,
+//         "Please Provide First Name and Last Name and Email"
+//       );
+//     }
+
+//     let errors = await companyAdminValidation.editProfileCAValidation(req, res);
+//     if (!errors.isEmpty()) {
+//       const firstError = errors.array()[0].msg;
+//       return handleResponse(res, 400, false, firstError);
+//     }
+
+//     await connection.query("BEGIN");
+//     let s1 = dbScript(db_sql_ca["Q3"], { var1: id });
+//     let findCompanyAdmin = await connection.query(s1);
+//     if (findCompanyAdmin.rowCount > 0) {
+//       let s2 = dbScript(db_sql_ca["Q5"], {
+//         var1: id,
+//         var2: (first_name),
+//         var3: (last_name),
+//         var4: (email),
+//         var5: (phone_number),
+//         var6: (mobile_number),
+//         var7: (avatar),
+//       });
+//       let updateCAProfile = await connection.query(s2);
+
+//       if (updateCAProfile.rowCount > 0) {
+//         let updatedCADetails = updateCAProfile.rows[0];
+//         delete updatedCADetails.password;
+//         await connection.query("COMMIT");
+//         return handleResponse(
+//           res,
+//           200,
+//           true,
+//           "Company Admin Profile Updated successfully",
+//           updatedCADetails
+//         );
+//       } else {
+//         await connection.query("ROLLBACK");
+//         return handleSWRError(res);
+//       }
+//     } else {
+//       return handleResponse(res, 401, false, "Company Admin Not Found");
+//     }
+//   } catch (error) {
+//     await connection.query("ROLLBACK");
+//     return handleCatchErrors(res, error);
+//   }
+// };
 
 module.exports.uploadAvatar = async (req, res) => {
   try {
