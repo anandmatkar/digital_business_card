@@ -684,15 +684,15 @@ module.exports.editCompanyDetails = async (req, res) => {
       return handleResponse(res, 400, false, "Invalid Company Id");
     }
 
-    // Trimming and escaping special characters to avoid double quotes
-    description = trimValue(mysql_real_escape_string(description)) || null;
-    company_address = trimValue(mysql_real_escape_string(company_address)) || null;
+    // Trimming and escaping special characters
+    description = trimValue((description)) || null;
+    company_address = trimValue((company_address)) || null;
     company_logo = trimValue(company_logo) || null;
     company_website = trimValue(company_website) || null;
-    contact_person_designation = trimValue(mysql_real_escape_string(contact_person_designation)) || null;
+    contact_person_designation = trimValue((contact_person_designation)) || null;
     contact_person_mobile = trimValue(contact_person_mobile) || null;
-    company_name = trimValue(mysql_real_escape_string(company_name)) || null;
-    contact_person_name = trimValue(mysql_real_escape_string(contact_person_name)) || null;
+    company_name = trimValue((company_name)) || null;
+    contact_person_name = trimValue((contact_person_name)) || null;
     latitude = trimValue(latitude) || null;
     longitude = trimValue(longitude) || null;
 
@@ -703,49 +703,62 @@ module.exports.editCompanyDetails = async (req, res) => {
     }
 
     await connection.query("BEGIN");
-    let s1 = dbScript(db_sql["Q3"], { var1: id });
-    let findSuperAdmin = await connection.query(s1);
+
+    let findSuperAdminQuery = `SELECT * FROM super_admin WHERE id = $1`;
+    let findSuperAdmin = await connection.query(findSuperAdminQuery, [id]);
+
     if (findSuperAdmin.rowCount > 0) {
-      let s2 = dbScript(db_sql["Q8"], { var1: company_id });
-      let findCompany = await connection.query(s2);
+      let findCompanyQuery = `SELECT * FROM company WHERE id = $1 AND deleted_at IS NULL`;
+      let findCompany = await connection.query(findCompanyQuery, [company_id]);
+
       if (findCompany.rowCount > 0) {
         if (findCompany.rows[0].used_cards > max_cards) {
-          return handleResponse(
-            res,
-            400,
-            false,
-            "Maximum number of cards cannot be less than used cards"
-          );
+          return handleResponse(res, 400, false, "Maximum number of cards cannot be less than used cards");
         }
 
-        let s3 = dbScript(db_sql["Q12"], {
-          var1: company_name,
-          var2: company_email.toLowerCase(),
-          var3: company_contact_number,
-          var4: max_cards,
-          var5: contact_person_name,
-          var6: contact_person_email.toLowerCase(),
-          var7: description,
-          var8: company_address,
-          var9: company_logo,
-          var10: company_website,
-          var11: contact_person_designation,
-          var12: contact_person_mobile,
-          var13: latitude,
-          var14: longitude,
-          var15: company_id,
-        });
+        let updateCompanyQuery = `
+          UPDATE company
+          SET 
+            company_name = $1, 
+            company_email = $2,
+            company_contact_number = $3,
+            max_cards = $4,
+            contact_person_name = $5,
+            contact_person_email = $6,
+            description = $7,
+            company_address = $8,
+            company_logo = $9,
+            company_website = $10,
+            contact_person_designation = $11,
+            contact_person_mobile = $12,
+            latitude = $13,
+            longitude = $14
+          WHERE 
+            id = $15 
+            AND deleted_at IS NULL 
+          RETURNING *`;
 
-        let editCompanyData = await connection.query(s3);
+        let updateCompanyDetails = await connection.query(updateCompanyQuery, [
+          company_name,
+          company_email.toLowerCase(),
+          company_contact_number,
+          max_cards,
+          contact_person_name,
+          contact_person_email.toLowerCase(),
+          description,
+          company_address,
+          company_logo,
+          company_website,
+          contact_person_designation,
+          contact_person_mobile,
+          latitude,
+          longitude,
+          company_id
+        ]);
 
-        if (editCompanyData.rowCount > 0) {
+        if (updateCompanyDetails.rowCount > 0) {
           await connection.query("COMMIT");
-          return handleResponse(
-            res,
-            200,
-            true,
-            "Company details updated successfully"
-          );
+          return handleResponse(res, 200, true, "Company details updated successfully", updateCompanyDetails.rows);
         } else {
           await connection.query("ROLLBACK");
           return handleSWRError(res);
