@@ -551,6 +551,7 @@ module.exports.companyDetails = async (req, res) => {
       let s2 = dbScript(db_sql["Q11"], { var1: company_id });
       let getCompanyDetails = await connection.query(s2);
       if (getCompanyDetails.rowCount > 0) {
+
         return handleResponse(
           res,
           200,
@@ -683,20 +684,19 @@ module.exports.editCompanyDetails = async (req, res) => {
       return handleResponse(res, 400, false, "Invalid Company Id");
     }
 
-    // Trimming the values
-    description = trimValue(description) || null;
-    company_address = trimValue(company_address) || null;
+    // Trimming and escaping special characters to avoid double quotes
+    description = trimValue(mysql_real_escape_string(description)) || null;
+    company_address = trimValue(mysql_real_escape_string(company_address)) || null;
     company_logo = trimValue(company_logo) || null;
     company_website = trimValue(company_website) || null;
-    contact_person_designation = trimValue(contact_person_designation) || null;
+    contact_person_designation = trimValue(mysql_real_escape_string(contact_person_designation)) || null;
     contact_person_mobile = trimValue(contact_person_mobile) || null;
+    company_name = trimValue(mysql_real_escape_string(company_name)) || null;
+    contact_person_name = trimValue(mysql_real_escape_string(contact_person_name)) || null;
     latitude = trimValue(latitude) || null;
     longitude = trimValue(longitude) || null;
 
-    let errors = await superAdminValidation.editCompanyDetailsValidation(
-      req,
-      res
-    );
+    let errors = await superAdminValidation.editCompanyDetailsValidation(req, res);
     if (!errors.isEmpty()) {
       const firstError = errors.array()[0].msg;
       return handleResponse(res, 400, false, firstError);
@@ -714,26 +714,28 @@ module.exports.editCompanyDetails = async (req, res) => {
             res,
             400,
             false,
-            "Maximum number of cards can not be less than used cards"
+            "Maximum number of cards cannot be less than used cards"
           );
         }
+
         let s3 = dbScript(db_sql["Q12"], {
-          var1: mysql_real_escape_string(company_name),
+          var1: company_name,
           var2: company_email.toLowerCase(),
           var3: company_contact_number,
           var4: max_cards,
-          var5: mysql_real_escape_string(contact_person_name),
+          var5: contact_person_name,
           var6: contact_person_email.toLowerCase(),
-          var7: mysql_real_escape_string(description),
-          var8: mysql_real_escape_string(company_address),
+          var7: description,
+          var8: company_address,
           var9: company_logo,
           var10: company_website,
-          var11: mysql_real_escape_string(contact_person_designation),
+          var11: contact_person_designation,
           var12: contact_person_mobile,
           var13: latitude,
           var14: longitude,
           var15: company_id,
         });
+
         let editCompanyData = await connection.query(s3);
 
         if (editCompanyData.rowCount > 0) {
@@ -742,23 +744,127 @@ module.exports.editCompanyDetails = async (req, res) => {
             res,
             200,
             true,
-            "Company details Updated successfully"
+            "Company details updated successfully"
           );
         } else {
           await connection.query("ROLLBACK");
           return handleSWRError(res);
         }
       } else {
-        return handleResponse(res, 404, false, "Company Not Found");
+        return handleResponse(res, 404, false, "Company not found");
       }
     } else {
-      return handleResponse(res, 401, false, "Super Admin Not Found");
+      return handleResponse(res, 401, false, "Super Admin not found");
     }
   } catch (error) {
     await connection.query("ROLLBACK");
     return handleCatchErrors(res, error);
   }
 };
+
+
+// module.exports.editCompanyDetails = async (req, res) => {
+//   try {
+//     let { id } = req.user;
+//     let {
+//       company_id,
+//       company_name,
+//       company_email,
+//       company_contact_number,
+//       max_cards,
+//       contact_person_name,
+//       contact_person_email,
+//       description,
+//       company_address,
+//       company_logo,
+//       company_website,
+//       contact_person_designation,
+//       contact_person_mobile,
+//       latitude,
+//       longitude,
+//     } = req.body;
+
+//     let isValidCId = isValidUUID(company_id);
+//     if (!isValidCId) {
+//       return handleResponse(res, 400, false, "Invalid Company Id");
+//     }
+
+//     // Trimming the values
+//     description = trimValue(description) || null;
+//     company_address = trimValue(company_address) || null;
+//     company_logo = trimValue(company_logo) || null;
+//     company_website = trimValue(company_website) || null;
+//     contact_person_designation = trimValue(contact_person_designation) || null;
+//     contact_person_mobile = trimValue(contact_person_mobile) || null;
+//     latitude = trimValue(latitude) || null;
+//     longitude = trimValue(longitude) || null;
+
+//     let errors = await superAdminValidation.editCompanyDetailsValidation(
+//       req,
+//       res
+//     );
+//     if (!errors.isEmpty()) {
+//       const firstError = errors.array()[0].msg;
+//       return handleResponse(res, 400, false, firstError);
+//     }
+
+//     await connection.query("BEGIN");
+//     let s1 = dbScript(db_sql["Q3"], { var1: id });
+//     let findSuperAdmin = await connection.query(s1);
+//     if (findSuperAdmin.rowCount > 0) {
+//       let s2 = dbScript(db_sql["Q8"], { var1: company_id });
+//       let findCompany = await connection.query(s2);
+//       if (findCompany.rowCount > 0) {
+//         if (findCompany.rows[0].used_cards > max_cards) {
+//           return handleResponse(
+//             res,
+//             400,
+//             false,
+//             "Maximum number of cards can not be less than used cards"
+//           );
+//         }
+//         let s3 = dbScript(db_sql["Q12"], {
+//           var1: mysql_real_escape_string(company_name),
+//           var2: company_email.toLowerCase(),
+//           var3: company_contact_number,
+//           var4: max_cards,
+//           var5: mysql_real_escape_string(contact_person_name),
+//           var6: contact_person_email.toLowerCase(),
+//           var7: mysql_real_escape_string(description),
+//           var8: mysql_real_escape_string(company_address),
+//           var9: company_logo,
+//           var10: company_website,
+//           var11: mysql_real_escape_string(contact_person_designation),
+//           var12: contact_person_mobile,
+//           var13: latitude,
+//           var14: longitude,
+//           var15: company_id,
+//         });
+//         let editCompanyData = await connection.query(s3);
+
+//         if (editCompanyData.rowCount > 0) {
+//           await connection.query("COMMIT");
+//           return handleResponse(
+//             res,
+//             200,
+//             true,
+//             "Company details Updated successfully"
+//           );
+//         } else {
+//           await connection.query("ROLLBACK");
+//           return handleSWRError(res);
+//         }
+//       } else {
+//         return handleResponse(res, 404, false, "Company Not Found");
+//       }
+//     } else {
+//       return handleResponse(res, 401, false, "Super Admin Not Found");
+//     }
+//   } catch (error) {
+//     await connection.query("ROLLBACK");
+//     return handleCatchErrors(res, error);
+//   }
+// };
 
 module.exports.deactivateCompanyAndCompanyAdmin = async (req, res) => {
   try {
