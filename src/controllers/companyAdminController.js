@@ -323,12 +323,12 @@ module.exports.editProfile = async (req, res) => {
     if (findCompanyAdmin.rowCount > 0) {
       let s2 = dbScript(db_sql_ca["Q5"], {
         var1: id,
-        var2: mysql_real_escape_string(first_name),
-        var3: mysql_real_escape_string(last_name),
-        var4: mysql_real_escape_string(email),
-        var5: mysql_real_escape_string(phone_number),
-        var6: mysql_real_escape_string(mobile_number),
-        var7: mysql_real_escape_string(avatar),
+        var2: (first_name),
+        var3: (last_name),
+        var4: (email),
+        var5: (phone_number),
+        var6: (mobile_number),
+        var7: (avatar),
       });
       let updateCAProfile = await connection.query(s2);
 

@@ -46,16 +46,17 @@ module.exports.mysql_real_escape_string = (str) => {
             case "\r":
                 return "\\r";
             case "\"":
-                return "\\\""; // Escape double quotes for the database
+                return "\\\""; // Escape only for database, ensure no extra escapes
             case "'":
                 return "\\'";
             case "\\":
-                return "\\\\";
+                return "\\\\"; // Single backslash for escaping backslashes
             case "%":
                 return "\\%";
         }
     });
 }
+
 
 
 
