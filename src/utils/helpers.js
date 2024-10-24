@@ -30,6 +30,7 @@ const { promisify } = require('util');
 // }
 
 module.exports.mysql_real_escape_string = (str) => {
+    if (typeof str !== "string") return str; // Ignore non-strings
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
         switch (char) {
             case "\0":
@@ -45,7 +46,7 @@ module.exports.mysql_real_escape_string = (str) => {
             case "\r":
                 return "\\r";
             case "\"":
-                return "\\\""; // Properly escape the double quote
+                return "\\\""; // Escape double quotes for the database
             case "'":
                 return "\\'";
             case "\\":
@@ -55,6 +56,7 @@ module.exports.mysql_real_escape_string = (str) => {
         }
     });
 }
+
 
 
 module.exports.isValidUUID = (uuid) => {
