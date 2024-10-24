@@ -231,17 +231,27 @@ GROUP BY
   ca.id;`
 };
 
+// function dbScript(template, variables) {
+//   if (variables != null && Object.keys(variables).length > 0) {
+//     template = template.replace(
+//       new RegExp("{([^{]+)}", "g"),
+//       (_unused, varName) => {
+//         return variables[varName];
+//       }
+//     );
+//   }
+//   template = template.replace(/'null'/g, null);
+//   return template;
+// }
+
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {
-    template = template.replace(
-      new RegExp("{([^{]+)}", "g"),
-      (_unused, varName) => {
-        return variables[varName];
-      }
-    );
+    template = template.replace(new RegExp("\{([^\{]+)\}", "g"), (_unused, varName) => {
+      return variables[varName];
+    });
   }
   template = template.replace(/'null'/g, null);
-  return template;
+  return template
 }
 
 
