@@ -462,8 +462,42 @@ module.exports.createCompany = async (req, res) => {
       if (checkCompanyAlreadyExists.rowCount == 0) {
         let company_logo = process.env.DEFAULT_COMPANY_LOGO;
         let cover_pic = process.env.DEFAULT_CARD_COVER_PIC;
-        let s3 = dbScript(db_sql["Q6"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: mysql_real_escape_string(company_contact_number), var4: max_cards, var5: mysql_real_escape_string(contact_person_name), var6: mysql_real_escape_string(contact_person_email.toLowerCase()), var7: company_logo, var8: cover_pic, var9: startDate, var10: endDateISO, var11: true, var12: true });
-        let createCompany = await connection.query(s3);
+        // let s3 = dbScript(db_sql["Q6"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: mysql_real_escape_string(company_contact_number), var4: max_cards, var5: mysql_real_escape_string(contact_person_name), var6: mysql_real_escape_string(contact_person_email.toLowerCase()), var7: company_logo, var8: cover_pic, var9: startDate, var10: endDateISO, var11: true, var12: true });
+        // let createCompany = await connection.query(s3);
+
+        let createCompanyQuery = `
+  INSERT INTO company (
+    company_name,
+    company_email,
+    company_contact_number,
+    max_cards,
+    contact_person_name,
+    contact_person_email,
+    company_logo,
+    cover_pic,
+    trial_start_date,
+    trial_end_date,
+    is_default_address,
+    is_main_company
+  )
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+  RETURNING *
+`;
+
+        let createCompany = await connection.query(createCompanyQuery, [
+          company_name,
+          company_email.toLowerCase(),
+          company_contact_number,
+          max_cards,
+          contact_person_name,
+          contact_person_email.toLowerCase(),
+          company_logo,
+          cover_pic,
+          startDate,
+          endDateISO,
+          true, // is_default_address
+          true  // is_main_company
+        ]);
 
         if (createCompany.rowCount) {
           let s3 = dbScript(db_sql["Q18"], { var1: null, var2: null, var3: null, var4: null, var5: null, var6: null, var7: null, var8: null, var9: null, var10: null, var11: null, var12: null, var13: null, var14: null, var15: createCompany.rows[0].id });
