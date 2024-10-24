@@ -30,7 +30,7 @@ const { promisify } = require('util');
 // }
 
 module.exports.mysql_real_escape_string = (str) => {
-    if (typeof str !== "string") return str; // Ignore non-strings
+    if (typeof str !== "string") return str;
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
         switch (char) {
             case "\0":
@@ -42,24 +42,20 @@ module.exports.mysql_real_escape_string = (str) => {
             case "\x1a":
                 return "\\z";
             case "\n":
-                return " ";
+                return " ";    // Avoid newlines
             case "\r":
-                return "\\r";
+                return "\\r";  // Replace carriage return
             case "\"":
-                return "\\\""; // Escape only for database, ensure no extra escapes
+                return "\\\""; // Escape double quote for SQL
             case "'":
-                return "\\'";
+                return "\\'";  // Escape single quote
             case "\\":
-                return "\\\\"; // Single backslash for escaping backslashes
+                return "\\\\"; // Only one backslash should be used
             case "%":
-                return "\\%";
+                return "\\%";  // Escape percentage signs
         }
     });
 }
-
-
-
-
 module.exports.isValidUUID = (uuid) => {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
