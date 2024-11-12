@@ -129,7 +129,7 @@ const db_sql = {
   Q20: `UPDATE company SET used_cards = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   Q21: `UPDATE digital_cards SET is_active_for_qr = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   Q22: `UPDATE digital_cards SET is_deactivated = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
-  Q23: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,associated_company FROM digital_cards WHERE created_by = '{var1}' AND deleted_at IS NULL ORDER BY created_at DESC;`,
+  Q23: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,associated_company, qr_url FROM digital_cards WHERE created_by = '{var1}' AND deleted_at IS NULL ORDER BY created_at DESC;`,
   Q24: `UPDATE digital_cards SET is_active_for_qr = '{var1}' WHERE id IN ('{var2}') AND deleted_at IS NULL RETURNING *`,
   Q25: `SELECT id,company_id,created_by,card_reference,first_name,last_name,user_email,designation,bio,user_type,cover_pic,profile_picture,is_deactivated, card_url,company_ref,contact_number,is_active_for_qr FROM digital_cards WHERE id = '{var1}' AND deleted_at IS NULL`,
   Q26: `UPDATE digital_cards SET first_name = '{var1}', last_name = '{var2}',user_email = '{var3}',designation = '{var4}',profile_picture = '{var5}', bio = '{var6}', cover_pic = '{var7}', contact_number = '{var8}' WHERE id = '{var9}' AND deleted_at IS NULL RETURNING *`,
