@@ -1432,6 +1432,7 @@ module.exports.deactivateCard = async (req, res) => {
   try {
     let { id } = req.user;
     let { card_id, status } = req.query;
+    console.log(status, "stauts")
     if (!card_id) {
       return handleResponse(res, 400, false, "Provide Valid Card Id");
     }
@@ -1439,6 +1440,7 @@ module.exports.deactivateCard = async (req, res) => {
       await connection.query("BEGIN");
       let s0 = dbScript(db_sql["Q16"], { var1: id });
       let findCompanyAdmin = await connection.query(s0);
+      console.log(findCompanyAdmin.rows[0].used_cards, "findCompanyAdmin.rows[0].used_cards")
       if (findCompanyAdmin.rowCount > 0) {
         let s1 = dbScript(db_sql["Q25"], { var1: card_id });
         let findCard = await connection.query(s1);
@@ -1453,6 +1455,7 @@ module.exports.deactivateCard = async (req, res) => {
               var1: status == 'deactivate' ? findCompanyAdmin.rows[0].used_cards - 1 : findCompanyAdmin.rows[0].used_cards + 1,
               var2: findCompanyAdmin.rows[0].id,
             });
+            console.log(s3, "s3");
             let reduceUsedCardCount = await connection.query(s3);
             if (reduceUsedCardCount.rowCount > 0) {
               await connection.query("COMMIT");
