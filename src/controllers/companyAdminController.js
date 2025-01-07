@@ -2177,7 +2177,7 @@ module.exports.removeCompanyLogo = async (req, res) => {
       return handleResponse(res, 401, false, "Admin not found");
     }
 
-    let s2 = dbScript(db_sql["Q52"], { var1: null, var1: findCompanyAdmin.rows[0].id });
+    let s2 = dbScript(db_sql["Q52"], { var1: null, var2: findCompanyAdmin.rows[0].id });
     console.log(s2, "s2")
     let removeLogo = await connection.query(s2);
     if (removeLogo.rowCount > 0) {
@@ -2200,7 +2200,7 @@ module.exports.removeCompanyCoverPic = async (req, res) => {
       return handleResponse(res, 401, false, "Admin not found");
     }
 
-    let s2 = dbScript(db_sql["Q52"], { var1: null, var1: findCompanyAdmin.rows[0].id });
+    let s2 = dbScript(db_sql["Q52"], { var1: null, var2: findCompanyAdmin.rows[0].id });
     let removeCoverPic = await connection.query(s2);
     if (removeCoverPic.rowCount > 0) {
       return handleResponse(res, 200, true, "Company Cover Pic removed successfully");
@@ -2222,7 +2222,7 @@ module.exports.removeAdminProfilePic = async (req, res) => {
       return handleResponse(res, 401, false, "Admin not found");
     }
 
-    let s2 = dbScript(db_sql["Q54"], { var1: null, var1: findCompanyAdmin.rows[0].id });
+    let s2 = dbScript(db_sql["Q54"], { var1: null, var2: findCompanyAdmin.rows[0].id });
     let removeProfilePic = await connection.query(s2);
     if (removeProfilePic.rowCount > 0) {
       return handleResponse(res, 200, true, "Profile Pic removed successfully");
