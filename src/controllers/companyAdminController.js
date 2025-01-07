@@ -1440,8 +1440,11 @@ module.exports.deactivateCard = async (req, res) => {
       await connection.query("BEGIN");
       let s0 = dbScript(db_sql["Q16"], { var1: id });
       let findCompanyAdmin = await connection.query(s0);
-      console.log(findCompanyAdmin.rows[0].used_cards, "findCompanyAdmin.rows[0].used_cards")
+
       if (findCompanyAdmin.rowCount > 0) {
+        if (findCompanyAdmin.rows[0].used_cards == findCompanyAdmin.rows[0].max_cards && status == 'activate') {
+          return handleResponse(res, 400, false, "Maximum Cards Limit Reached Cannot Activate the card");
+        }
         let s1 = dbScript(db_sql["Q25"], { var1: card_id });
         let findCard = await connection.query(s1);
         if (findCard.rowCount > 0) {
