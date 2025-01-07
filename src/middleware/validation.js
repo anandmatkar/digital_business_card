@@ -400,7 +400,6 @@ const cardValidation = {
       // body("bio").trim().isLength({ min: 1 }).withMessage("Bio is required"),
       body("contact_number")
         .trim()
-        .isLength({ min: 10 })
         .withMessage("Contact Number is required"),
       body("associated_company").trim().isLength({ min: 1 }).withMessage("Associated Company Id is required")
     ];
