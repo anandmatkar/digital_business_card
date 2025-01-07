@@ -2168,14 +2168,17 @@ module.exports.addAddress = async (req, res) => {
 module.exports.removeCompanyLogo = async (req, res) => {
   try {
     const { id } = req.user;
+    console.log(id, "idddddddddddddd")
     let s1 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
+    console.log(findCompanyAdmin, "findCompanyAdmin")
 
     if (findCompanyAdmin?.rowCount == 0) {
       return handleResponse(res, 401, false, "Admin not found");
     }
 
     let s2 = dbScript(db_sql["Q52"], { var1: null, var1: findCompanyAdmin.rows[0].id });
+    console.log(s2, "s2")
     let removeLogo = await connection.query(s2);
     if (removeLogo.rowCount > 0) {
       return handleResponse(res, 200, true, "Company Logo removed successfully");
