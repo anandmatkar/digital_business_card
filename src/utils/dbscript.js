@@ -213,7 +213,7 @@ RETURNING *`,
   Q51: `DELETE FROM user_media_link WHERE company_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   Q52: `UPDATE company SET company_logo = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   Q53: `UPDATE company SET cover_pic = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
-  Q54: `UPDAET company_admin SET avatar = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+  Q54: `UPDATE company_admin SET avatar = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
 };
 
 const db_sql_ca = {

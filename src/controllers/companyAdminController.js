@@ -2222,7 +2222,7 @@ module.exports.removeAdminProfilePic = async (req, res) => {
       return handleResponse(res, 401, false, "Admin not found");
     }
 
-    let s2 = dbScript(db_sql["Q54"], { var1: null, var2: findCompanyAdmin.rows[0].id });
+    let s2 = dbScript(db_sql["Q54"], { var1: null, var2: id });
     let removeProfilePic = await connection.query(s2);
     if (removeProfilePic.rowCount > 0) {
       return handleResponse(res, 200, true, "Profile Pic removed successfully");
