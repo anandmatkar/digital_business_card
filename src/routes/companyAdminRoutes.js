@@ -16,6 +16,10 @@ router.put("/resetPassword", controller.companyAdminController.resetPassword);
 router.put("/changePassword", verifyTokenForCA, controller.companyAdminController.changePassword);
 router.put("/editProfile", verifyTokenForCA, controller.companyAdminController.editProfile);
 router.post("/uploadAvatar", verifyTokenForCA, uploadCAAvatar.single('image'), controller.companyAdminController.uploadAvatar);
+router.post("/removeAvatar", verifyTokenForCA, controller.companyAdminController.removeAdminProfilePic);
+router.post("/removeCompanyLogo", verifyTokenForCA, controller.companyAdminController.removeCompanyLogo);
+router.post("/removeCoverPic", verifyTokenForCA, controller.companyAdminController.removeCompanyCoverPic);
+
 
 /**==== card section ==== */
 

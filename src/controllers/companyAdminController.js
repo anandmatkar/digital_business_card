@@ -53,7 +53,9 @@ module.exports.loginCompanyAdmin = async (req, res) => {
     let s1 = dbScript(db_sql_ca["Q6"], {
       var1: mysql_real_escape_string(email.toLowerCase()),
     });
+    // console.log(s1, "s111")
     let findCompanyAdmin = await connection.query(s1);
+    console.log(findCompanyAdmin, "findCompanyAdmin")
     if (findCompanyAdmin.rowCount > 0) {
       if (findCompanyAdmin.rows[0].is_active) {
         let trial_end_date = new Date(findCompanyAdmin.rows[0].company_data[0].trial_end_date);
@@ -2159,6 +2161,72 @@ module.exports.addAddress = async (req, res) => {
     // let s2 = 
   } catch (error) {
     await connection.query("ROLLBACK")
+    return handleCatchErrors(res, error);
+  }
+}
+
+module.exports.removeCompanyLogo = async (req, res) => {
+  try {
+    const { id } = req.user;
+    let s1 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s1);
+
+    if (findCompanyAdmin?.rowCount == 0) {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+
+    let s2 = dbScript(db_sql["Q52"], { var1: null, var1: findCompanyAdmin.rows[0].id });
+    let removeLogo = await connection.query(s2);
+    if (removeLogo.rowCount > 0) {
+      return handleResponse(res, 200, true, "Company Logo removed successfully");
+    } else {
+      return handleResponse(res, 400, false, "Failed to remove company logo");
+    }
+  } catch (error) {
+    return handleCatchErrors(res, error);
+  }
+}
+
+module.exports.removeCompanyCoverPic = async (req, res) => {
+  try {
+    const { id } = req.user;
+    let s1 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s1);
+
+    if (findCompanyAdmin?.rowCount == 0) {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+
+    let s2 = dbScript(db_sql["Q52"], { var1: null, var1: findCompanyAdmin.rows[0].id });
+    let removeCoverPic = await connection.query(s2);
+    if (removeCoverPic.rowCount > 0) {
+      return handleResponse(res, 200, true, "Company Cover Pic removed successfully");
+    } else {
+      return handleResponse(res, 400, false, "Failed to remove Cover Pic");
+    }
+  } catch (error) {
+    return handleCatchErrors(res, error);
+  }
+}
+
+module.exports.removeAdminProfilePic = async (req, res) => {
+  try {
+    const { id } = req.user;
+    let s1 = dbScript(db_sql["Q16"], { var1: id });
+    let findCompanyAdmin = await connection.query(s1);
+
+    if (findCompanyAdmin?.rowCount == 0) {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+
+    let s2 = dbScript(db_sql["Q54"], { var1: null, var1: findCompanyAdmin.rows[0].id });
+    let removeProfilePic = await connection.query(s2);
+    if (removeProfilePic.rowCount > 0) {
+      return handleResponse(res, 200, true, "Profile Pic removed successfully");
+    } else {
+      return handleResponse(res, 400, false, "Failed to remove Profile Pic");
+    }
+  } catch (error) {
     return handleCatchErrors(res, error);
   }
 }
