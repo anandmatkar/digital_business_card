@@ -460,8 +460,10 @@ module.exports.createCompany = async (req, res) => {
       });
       let checkCompanyAlreadyExists = await connection.query(s2);
       if (checkCompanyAlreadyExists.rowCount == 0) {
-        let company_logo = process.env.DEFAULT_COMPANY_LOGO;
-        let cover_pic = process.env.DEFAULT_CARD_COVER_PIC;
+        // let company_logo = process.env.DEFAULT_COMPANY_LOGO;
+        // let cover_pic = process.env.DEFAULT_CARD_COVER_PIC;
+        let company_logo = null;
+        let cover_pic = null;
         // let s3 = dbScript(db_sql["Q6"], { var1: mysql_real_escape_string(company_name), var2: mysql_real_escape_string(company_email.toLowerCase()), var3: mysql_real_escape_string(company_contact_number), var4: max_cards, var5: mysql_real_escape_string(contact_person_name), var6: mysql_real_escape_string(contact_person_email.toLowerCase()), var7: company_logo, var8: cover_pic, var9: startDate, var10: endDateISO, var11: true, var12: true });
         // let createCompany = await connection.query(s3);
 
@@ -633,7 +635,8 @@ module.exports.createCompanyAdmin = async (req, res) => {
       if (findCompany.rowCount > 0) {
         if (findCompany.rows[0].status !== "deactivated") {
           const encryptedPassword = await bcrypt.hash(password, 10);
-          let avatar = process.env.DEFAULT_ADMIN_AVATAR;
+          // let avatar = process.env.DEFAULT_ADMIN_AVATAR;
+          let avatar = null;
           let s3 = dbScript(db_sql["Q10"], { var1: company_id });
           let isAdminAlreadyReg = await connection.query(s3);
           if (isAdminAlreadyReg.rowCount == 0) {
