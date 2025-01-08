@@ -2174,7 +2174,7 @@ module.exports.addAddress = async (req, res) => {
 module.exports.removeCompanyLogo = async (req, res) => {
   try {
     const { id } = req.user;
-    console.log(id, "idddddddddddddd")
+    const { company_id } = req.body;
     let s1 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
     console.log(findCompanyAdmin, "findCompanyAdmin")
@@ -2183,7 +2183,7 @@ module.exports.removeCompanyLogo = async (req, res) => {
       return handleResponse(res, 401, false, "Admin not found");
     }
 
-    let s2 = dbScript(db_sql["Q52"], { var1: null, var2: findCompanyAdmin.rows[0].id });
+    let s2 = dbScript(db_sql["Q52"], { var1: null, var2: company_id });
     console.log(s2, "s2")
     let removeLogo = await connection.query(s2);
     if (removeLogo.rowCount > 0) {
@@ -2199,6 +2199,7 @@ module.exports.removeCompanyLogo = async (req, res) => {
 module.exports.removeCompanyCoverPic = async (req, res) => {
   try {
     const { id } = req.user;
+    const { company_id } = req.body;
     let s1 = dbScript(db_sql["Q16"], { var1: id });
     let findCompanyAdmin = await connection.query(s1);
 
@@ -2206,10 +2207,10 @@ module.exports.removeCompanyCoverPic = async (req, res) => {
       return handleResponse(res, 401, false, "Admin not found");
     }
 
-    let s2 = dbScript(db_sql["Q52"], { var1: null, var2: findCompanyAdmin.rows[0].id });
+    let s2 = dbScript(db_sql["Q53"], { var1: null, var2: company_id });
     let removeCoverPic = await connection.query(s2);
     if (removeCoverPic.rowCount > 0) {
-      return handleResponse(res, 200, true, "Company Cover Pic removed successfully");
+      return handleResponse(res, 200, true, "Company Cover Pic removed successfully", removeCoverPic);
     } else {
       return handleResponse(res, 400, false, "Failed to remove Cover Pic");
     }
