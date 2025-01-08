@@ -239,32 +239,10 @@ RETURNING *`,
                 c.trial_end_date,
                 c.created_at, 
                 c.updated_at, 
-                c.deleted_at,
-                COALESCE(json_agg(json_build_object(
-                    'company_admin_id', ca.id,
-                    'first_name', ca.first_name,
-                    'last_name', ca.last_name,
-                    'email', ca.email,
-                    'phone_number', ca.phone_number,
-                    'mobile_number', ca.mobile_number,
-                    'company_id', ca.company_id,
-                    'created_by', ca.created_by,
-                    'role', ca.role,
-                    'is_active', ca.is_active,
-                    'avatar', ca.avatar,
-                    'created_at', ca.created_at,
-                    'updated_at', ca.updated_at,
-                    'deleted_at', ca.deleted_at
-                )), '[]') AS company_admin_data
-            FROM 
-                company AS c 
-            LEFT JOIN 
-                company_admin AS ca ON c.id = ca.company_id AND ca.deleted_at IS NULL
+                c.deleted_at
+                FROM company as c
             WHERE 
-                c.admin_id = '{var1}' AND c.id = '{var2}' AND c.is_main_company = 'false'
-                AND c.deleted_at IS NULL
-            GROUP BY 
-                c.id;`
+                 c.id = '{var1}'AND c.deleted_at IS NULL`
 };
 
 const db_sql_ca = {

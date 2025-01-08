@@ -671,7 +671,8 @@ module.exports.extraCompanyDetails = async (req, res) => {
   try {
     let { id } = req.user;
     let { company_id } = req.query
-    let s1 = dbScript(db_sql["Q55"], { var1: id, var2: company_id });
+    let s1 = dbScript(db_sql["Q55"], { var1: company_id });
+    console.log(s1, "S11111")
     let findCompanyAdmin = await connection.query(s1);
     if (findCompanyAdmin.rowCount > 0) {
       if (findCompanyAdmin.rows[0].product_service) {
