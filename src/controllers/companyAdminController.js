@@ -679,7 +679,7 @@ module.exports.extraCompanyDetails = async (req, res) => {
         findCompanyAdmin.rows[0].product_service = unescape(JSON.parse(findCompanyAdmin.rows[0].product_service));
       }
       // findCompanyAdmin.rows[0].cover_pic = findCompanyAdmin.rows[0].cover_pic || process.env.DEFAULT_CARD_COVER_PIC;
-      return handleResponse(res, 200, true, "Company Details", findCompanyAdmin.rows);
+      return handleResponse(res, 200, true, "Company Details", findCompanyAdmin.rows[0]);
     } else {
       return handleResponse(res, 401, false, "Admin not found");
     }
