@@ -41,6 +41,7 @@ router.post("/uploadCompanyLogo", verifyTokenForCA, uploadCompanyLogo.single("im
 router.post("/editCompanyDetails", verifyTokenForCA, controller.companyAdminController.editCompanyDetails);
 router.put("/editSocialMedia", verifyTokenForCA, controller.companyAdminController.editSocialMedia);
 router.get("/companyDetails", verifyTokenForCA, controller.companyAdminController.companyDetails);
+router.get("/extraCompanyDetails", verifyTokenForCA, controller.companyAdminController.extraCompanyDetails);
 router.get("/socialMediaDetails", verifyTokenForCA, controller.companyAdminController.socialMediaDetails);
 router.get("/qrCodeList", verifyTokenForCA, controller.companyAdminController.qrCodeList);
 router.post("/addCompanyAddress", verifyTokenForCA, controller.companyAdminController.addCompanyAddress);

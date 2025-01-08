@@ -214,6 +214,57 @@ RETURNING *`,
   Q52: `UPDATE company SET company_logo = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   Q53: `UPDATE company SET cover_pic = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   Q54: `UPDATE company_admin SET avatar = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+  Q55: `SELECT 
+                c.id, 
+                c.company_name, 
+                c.company_email, 
+                c.description, 
+                c.company_address, 
+                c.company_logo, 
+                c.company_contact_number,
+                c.company_website, 
+                c.status, 
+                c.max_cards,
+                c.used_cards, 
+                c.contact_person_name, 
+                c.contact_person_designation,
+                c.contact_person_email, 
+                c.contact_person_mobile, 
+                c.product_service,
+                c.cover_pic,
+                c.location, 
+                c.latitude, 
+                c.longitude, 
+                c.trial_start_date,
+                c.trial_end_date,
+                c.created_at, 
+                c.updated_at, 
+                c.deleted_at,
+                COALESCE(json_agg(json_build_object(
+                    'company_admin_id', ca.id,
+                    'first_name', ca.first_name,
+                    'last_name', ca.last_name,
+                    'email', ca.email,
+                    'phone_number', ca.phone_number,
+                    'mobile_number', ca.mobile_number,
+                    'company_id', ca.company_id,
+                    'created_by', ca.created_by,
+                    'role', ca.role,
+                    'is_active', ca.is_active,
+                    'avatar', ca.avatar,
+                    'created_at', ca.created_at,
+                    'updated_at', ca.updated_at,
+                    'deleted_at', ca.deleted_at
+                )), '[]') AS company_admin_data
+            FROM 
+                company AS c 
+            LEFT JOIN 
+                company_admin AS ca ON c.id = ca.company_id AND ca.deleted_at IS NULL
+            WHERE 
+                c.admin_id = '{var1}' AND c.id = '{var2}' AND c.is_main_company = 'false'
+                AND c.deleted_at IS NULL
+            GROUP BY 
+                c.id;`
 };
 
 const db_sql_ca = {

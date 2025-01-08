@@ -667,6 +667,26 @@ module.exports.companyDetails = async (req, res) => {
   }
 };
 
+module.exports.extraCompanyDetails = async (req, res) => {
+  try {
+    let { id } = req.user;
+    let { company_id } = req.body
+    let s1 = dbScript(db_sql["Q55"], { var1: id, var2: company_id });
+    let findCompanyAdmin = await connection.query(s1);
+    if (findCompanyAdmin.rowCount > 0) {
+      if (findCompanyAdmin.rows[0].product_service) {
+        findCompanyAdmin.rows[0].product_service = unescape(JSON.parse(findCompanyAdmin.rows[0].product_service));
+      }
+      // findCompanyAdmin.rows[0].cover_pic = findCompanyAdmin.rows[0].cover_pic || process.env.DEFAULT_CARD_COVER_PIC;
+      return handleResponse(res, 200, true, "Company Details", findCompanyAdmin.rows);
+    } else {
+      return handleResponse(res, 401, false, "Admin not found");
+    }
+  } catch (error) {
+    return handleCatchErrors(res, error);
+  }
+};
+
 module.exports.editSocialMedia = async (req, res) => {
   try {
     let { id } = req.user;
