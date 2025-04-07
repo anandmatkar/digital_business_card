@@ -48,5 +48,7 @@ router.post("/uploadCompanyLogoForSA", verifyTokenForSA, uploadCompanyLogo.singl
 
 router.put("/deleteCompany", verifyTokenForSA, controller.superAdminController.deleteCompany
 );
+router.put("/updateTrialPeriod", verifyTokenForSA, controller.superAdminController.updatePlanDuration
+);
 
 module.exports = router;

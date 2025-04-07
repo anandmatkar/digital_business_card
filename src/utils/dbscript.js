@@ -242,7 +242,9 @@ RETURNING *`,
                 c.deleted_at
                 FROM company as c
             WHERE 
-                 c.id = '{var1}'AND c.deleted_at IS NULL`
+                 c.id = '{var1}'AND c.deleted_at IS NULL`,
+  Q56: `SELECT * FROM company WHERE id = '{var1}' AND deleted_at IS NULL`,
+  Q57: `UPDATE company SET trial_start_date = '{var1}', trial_end_date = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`
 };
 
 const db_sql_ca = {

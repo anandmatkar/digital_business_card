@@ -1134,3 +1134,62 @@ module.exports.cardDetailsForSA = async (req, res) => {
     return handleCatchErrors(res, error);
   }
 };
+
+module.exports.updatePlanDuration = async (req, res) => {
+  try {
+    let { id } = req.user;
+    let { company_id, trial_duration } = req.body;
+
+    let s1 = dbScript(db_sql["Q3"], { var1: id });
+    let findSuperAdmin = await connection.query(s1);
+
+    if (findSuperAdmin.rowCount > 0) {
+      if (![1, 3, 12, 24].includes(parseInt(trial_duration))) {
+        return handleResponse(res, 400, false, "Invalid trial duration");
+      }
+
+      let s2 = dbScript(db_sql["Q56"], { var1: company_id });
+      let findCompany = await connection.query(s2);
+
+      if (findCompany.rowCount === 0) {
+        return handleResponse(res, 404, false, "Company not found");
+      }
+
+      let company = findCompany.rows[0];
+      let currentDate = new Date();
+      let newStartDate, newEndDate;
+
+      if (new Date(company.trial_end_date) < currentDate) {
+        // Trial expired - start from today
+        newStartDate = currentDate;
+        newEndDate = new Date(currentDate);
+        newEndDate.setMonth(newEndDate.getMonth() + parseInt(trial_duration));
+      } else {
+        // Trial still active - extend from current trial_end_date
+        newStartDate = new Date(company.trial_end_date);
+        newEndDate = new Date(company.trial_end_date);
+        newEndDate.setMonth(newEndDate.getMonth() + parseInt(trial_duration));
+      }
+
+
+      let updateTrialSQL = dbScript(db_sql["Q57"], {
+        var1: newStartDate.toISOString(),
+        var2: newEndDate.toISOString(),
+        var3: company_id
+      });
+      await connection.query(updateTrialSQL);
+
+      return handleResponse(res, 200, true, "Trial duration updated successfully", {
+        new_trial_start_date: newStartDate.toISOString(),
+        new_trial_end_date: newEndDate.toISOString()
+      });
+
+    } else {
+      return handleResponse(res, 401, false, "Super Admin not found");
+    }
+  } catch (error) {
+    console.error(error);
+    return handleResponse(res, 500, false, "Something went wrong");
+  }
+};
+
