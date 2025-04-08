@@ -1150,6 +1150,7 @@ module.exports.updatePlanDuration = async (req, res) => {
 
       let s2 = dbScript(db_sql["Q56"], { var1: company_id });
       let findCompany = await connection.query(s2);
+      console.log(findCompany.rows[0], "1111111111111111")
 
       if (findCompany.rowCount === 0) {
         return handleResponse(res, 404, false, "Company not found");
@@ -1175,7 +1176,7 @@ module.exports.updatePlanDuration = async (req, res) => {
       let updateTrialSQL = dbScript(db_sql["Q57"], {
         var1: newStartDate.toISOString(),
         var2: newEndDate.toISOString(),
-        var3: company_id
+        var3: findCompany.rows[0].admin_id
       });
       await connection.query(updateTrialSQL);
 
