@@ -1527,6 +1527,7 @@ module.exports.card = async (req, res) => {
     });
     let findCardDetails = await connection.query(s1);
     if (findCardDetails.rowCount > 0) {
+      console.log(findCardDetails.rows[0].trial_end_date, "findCardDetails.rows[0].trial_end_date", new Date().toISOString(), "new Date().toISOString()")
       if (findCardDetails.rows[0].trial_end_date > new Date().toISOString()) {
 
 
